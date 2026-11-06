@@ -7,7 +7,7 @@ on:
   workflow_dispatch: {}   # Actions 화면에서 "Run workflow" 버튼으로 바로 실행
   push:                   # 종목 목록이나 코드를 고치면 바로 한 번 실행
     branches: [main]
-    paths: ["stock_bot.py", "stocks.csv"]
+    paths: ["stock_bot.py", "stocks.csv", "reasons.json"]
 
 permissions:
   contents: write
