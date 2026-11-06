@@ -131,9 +131,26 @@ def fetch_fundamentals(tickers, today):
         growth = num(info.get("earningsGrowth"))
         if pd.isna(growth):
             growth = num(info.get("earningsQuarterlyGrowth"))
+        price = num(info.get("currentPrice"))
+        if pd.isna(price):
+            price = num(info.get("regularMarketPrice"))
+        per = num(info.get("trailingPE"))
+        if pd.isna(per):   # 한국 종목은 PER이 비어 있는 경우가 많아서 주가 ÷ 주당순이익으로 직접 계산
+            eps = num(info.get("trailingEps"))
+            if not pd.isna(eps) and not pd.isna(price) and eps != 0:
+                per = price / eps if eps > 0 else -1.0
+        pbr = num(info.get("priceToBook"))
+        if pd.isna(pbr):   # 주가 ÷ 주당순자산
+            bv = num(info.get("bookValue"))
+            if not pd.isna(bv) and not pd.isna(price) and bv > 0:
+                pbr = price / bv
+        if t == "005930.KS":   # 한국 종목 자료가 어떻게 오는지 확인용
+            print("005930.KS 재무 항목:", {k: info.get(k) for k in (
+                "currentPrice", "trailingPE", "forwardPE", "trailingEps", "priceToBook",
+                "bookValue", "returnOnEquity", "earningsGrowth", "financialCurrency", "currency")})
         return t, {
-            "per": num(info.get("trailingPE")),
-            "pbr": num(info.get("priceToBook")),
+            "per": per,
+            "pbr": pbr,
             "roe": num(info.get("returnOnEquity")),
             "growth": growth,
             "margin": num(info.get("profitMargins")),
@@ -257,7 +274,7 @@ def score(df):
     gr_s = pct_rank(df.growth)
     parts = pd.concat([per_s, pbr_s, roe_s, gr_s], axis=1)
     df["fin_score"] = parts.mean(axis=1, skipna=True).round(1).where(parts.notna().sum(axis=1) >= 2)
-    df["value_ok"] = df.fin_score.notna() & (df.roe > 0) & (df.per > 0)
+    df["value_ok"] = df.fin_score.notna() & (df.roe > 0) & ~loss
 
     # 오늘의 추천: 쑥쑥 45% + 안정 25% + 실속 30% (재무 자료가 없으면 쑥쑥 60% + 안정 40%)
     with_fin = 0.45 * df.mom_score + 0.25 * df.stab_score + 0.30 * df.fin_score
@@ -424,7 +441,8 @@ def phone_message(df, long, today):
             ("🚀 쑥쑥", "momentum", lambda r: f"6달 {pct(r.r6m)}"),
             ("🎢 쉬는중", "rebound", lambda r: f"최고점보다 {pct(r.from_high)}"),
             ("🐢 꾸준", "stable", lambda r: f"흔들림 {shake(r.vol60)}"),
-            ("💎 실속", "value", lambda r: f"PER {times(r.per)} · ROE {pct(r.roe)}"),
+            ("💎 실속", "value", lambda r: (f"PER {times(r.per)} · " if not pd.isna(r.per) else "")
+                                          + f"ROE {pct(r.roe)}"),
         ]:
             rows = p[key]
             if rows.empty:
@@ -512,7 +530,8 @@ def recent_panel(sub, mk):
         card("🐢 천천히 꾸준히", "주가가 덜 흔들리고 6달 동안 조금이라도 오른 종목이에요",
              p["stable"], lambda r: f"흔들림 {shake(r.vol60)}") +
         card("💎 실속 있는 회사", "버는 돈에 비해 주가가 싸고(PER·PBR 낮음), 돈을 잘 버는(ROE·이익 성장 높음) 회사예요",
-             p["value"], lambda r: f"<span>PER {times(r.per)} · ROE {updown(r.roe)}</span>")
+             p["value"], lambda r: (f"<span>PER {times(r.per)} · ROE {updown(r.roe)}</span>"
+                                    if not pd.isna(r.per) else f"<span>ROE {updown(r.roe)}</span>"))
     )
 
     cols = [("name", "이름"), ("category", "업종"), ("r1m", "1달"), ("r3m", "3달"),
