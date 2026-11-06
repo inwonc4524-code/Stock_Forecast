@@ -1,108 +1,108 @@
 ticker,name,market,category,theme
-005930.KS,삼성전자,KR,반도체,kr
-000660.KS,SK하이닉스,KR,반도체,kr
-373220.KS,LG에너지솔루션,KR,2차전지,kr|bat|ess
-207940.KS,삼성바이오로직스,KR,바이오,kr
-005380.KS,현대차,KR,자동차,kr
-000270.KS,기아,KR,자동차,kr
-068270.KS,셀트리온,KR,바이오,kr
-105560.KS,KB금융,KR,금융,kr
-055550.KS,신한지주,KR,금융,kr
-086790.KS,하나금융지주,KR,금융,kr
-316140.KS,우리금융지주,KR,금융,kr
-138040.KS,메리츠금융지주,KR,금융,kr
-024110.KS,기업은행,KR,금융,kr
-323410.KS,카카오뱅크,KR,금융,kr
-032830.KS,삼성생명,KR,보험,kr
-000810.KS,삼성화재,KR,보험,kr
-035420.KS,NAVER,KR,인터넷,kr
-035720.KS,카카오,KR,인터넷,kr
-259960.KS,크래프톤,KR,게임,kr
-012450.KS,한화에어로스페이스,KR,방산,kr
-064350.KS,현대로템,KR,방산,kr
-329180.KS,HD현대중공업,KR,조선,kr
-009540.KS,HD한국조선해양,KR,조선,kr
-042660.KS,한화오션,KR,조선,kr
-010140.KS,삼성중공업,KR,조선,kr
-267260.KS,HD현대일렉트릭,KR,전력기기,kr|power
-034020.KS,두산에너빌리티,KR,원전·발전,kr|power
-015760.KS,한국전력,KR,전력,kr|power
-005490.KS,POSCO홀딩스,KR,철강·소재,kr|bat
-010130.KS,고려아연,KR,비철금속,kr
-003670.KS,포스코퓨처엠,KR,2차전지소재,kr|bat
-006400.KS,삼성SDI,KR,2차전지,kr|bat|ess
-051910.KS,LG화학,KR,화학,kr|bat
-096770.KS,SK이노베이션,KR,에너지,kr|bat
-012330.KS,현대모비스,KR,자동차부품,kr
-066570.KS,LG전자,KR,가전,kr
-009150.KS,삼성전기,KR,전자부품,kr
-018260.KS,삼성에스디에스,KR,IT서비스,kr
-017670.KS,SK텔레콤,KR,통신,kr
-030200.KS,KT,KR,통신,kr
-033780.KS,KT&G,KR,담배·생활,kr
-011200.KS,HMM,KR,해운,kr
-028260.KS,삼성물산,KR,지주,kr
-003550.KS,LG,KR,지주,kr
-034730.KS,SK,KR,지주,kr
-247540.KQ,에코프로비엠,KR,2차전지소재(코스닥),kr|bat
-086520.KQ,에코프로,KR,2차전지소재(코스닥),kr|bat
-196170.KQ,알테오젠,KR,바이오(코스닥),kr
-028300.KQ,HLB,KR,바이오(코스닥),kr
-141080.KQ,리가켐바이오,KR,바이오(코스닥),kr
-277810.KQ,레인보우로보틱스,KR,로봇(코스닥),kr|robot
-058470.KQ,리노공업,KR,반도체부품(코스닥),kr
-AAPL,애플,US,기술,us
-MSFT,마이크로소프트,US,기술,us
-NVDA,엔비디아,US,반도체,us
-AVGO,브로드컴,US,반도체,us
-AMD,AMD,US,반도체,us
-QCOM,퀄컴,US,반도체,us
-TXN,텍사스인스트루먼트,US,반도체,us
-MU,마이크론,US,반도체,us
-AMAT,어플라이드머티리얼즈,US,반도체장비,us
-GOOGL,알파벳(구글),US,인터넷,us
-META,메타,US,인터넷,us
-AMZN,아마존,US,인터넷·쇼핑,us
-NFLX,넷플릭스,US,미디어,us
-DIS,디즈니,US,미디어,us
-UBER,우버,US,인터넷,us
-TSLA,테슬라,US,자동차,us|ess|robot
-ORCL,오라클,US,소프트웨어,us
-CRM,세일즈포스,US,소프트웨어,us
-ADBE,어도비,US,소프트웨어,us
-NOW,서비스나우,US,소프트웨어,us
-INTU,인튜이트,US,소프트웨어,us
-PLTR,팔란티어,US,소프트웨어,us
-IBM,IBM,US,IT서비스,us
-CSCO,시스코,US,네트워크,us
-BRK-B,버크셔해서웨이,US,지주,us
-JPM,JP모건,US,금융,us
-BAC,뱅크오브아메리카,US,금융,us
-WFC,웰스파고,US,금융,us
-GS,골드만삭스,US,금융,us
-V,비자,US,결제,us
-MA,마스터카드,US,결제,us
-LLY,일라이릴리,US,제약,us
-JNJ,존슨앤드존슨,US,제약,us
-ABBV,애브비,US,제약,us
-MRK,머크,US,제약,us
-UNH,유나이티드헬스,US,헬스케어,us
-TMO,써모피셔,US,헬스케어,us
-ABT,애보트,US,헬스케어,us
-ISRG,인튜이티브서지컬,US,의료기기,us|robot
-WMT,월마트,US,유통,us
-COST,코스트코,US,유통,us
-HD,홈디포,US,유통,us
-MCD,맥도날드,US,외식,us
-KO,코카콜라,US,음료,us
-PEP,펩시코,US,음료,us
-PG,P&G,US,생활용품,us
-XOM,엑슨모빌,US,에너지,us
-CVX,셰브론,US,에너지,us
-LIN,린데,US,소재,us
-GE,GE에어로스페이스,US,항공·방산,us
-CAT,캐터필러,US,기계,us
-T,AT&T,US,통신,us
+005930.KS,삼성전자,KR,반도체,semi
+000660.KS,SK하이닉스,KR,반도체,semi
+373220.KS,LG에너지솔루션,KR,2차전지,bat|ess
+207940.KS,삼성바이오로직스,KR,바이오,bio
+005380.KS,현대차,KR,자동차,
+000270.KS,기아,KR,자동차,
+068270.KS,셀트리온,KR,바이오,bio
+105560.KS,KB금융,KR,금융,fin
+055550.KS,신한지주,KR,금융,fin
+086790.KS,하나금융지주,KR,금융,fin
+316140.KS,우리금융지주,KR,금융,fin
+138040.KS,메리츠금융지주,KR,금융,fin
+024110.KS,기업은행,KR,금융,fin
+323410.KS,카카오뱅크,KR,금융,fin
+032830.KS,삼성생명,KR,보험,fin
+000810.KS,삼성화재,KR,보험,fin
+035420.KS,NAVER,KR,인터넷,net
+035720.KS,카카오,KR,인터넷,net
+259960.KS,크래프톤,KR,게임,net
+012450.KS,한화에어로스페이스,KR,방산,defense
+064350.KS,현대로템,KR,방산,defense
+329180.KS,HD현대중공업,KR,조선,defense
+009540.KS,HD한국조선해양,KR,조선,defense
+042660.KS,한화오션,KR,조선,defense
+010140.KS,삼성중공업,KR,조선,defense
+267260.KS,HD현대일렉트릭,KR,전력기기,power
+034020.KS,두산에너빌리티,KR,원전·발전,power
+015760.KS,한국전력,KR,전력,power
+005490.KS,POSCO홀딩스,KR,철강·소재,bat
+010130.KS,고려아연,KR,비철금속,
+003670.KS,포스코퓨처엠,KR,2차전지소재,bat
+006400.KS,삼성SDI,KR,2차전지,bat|ess
+051910.KS,LG화학,KR,화학,bat
+096770.KS,SK이노베이션,KR,에너지,bat
+012330.KS,현대모비스,KR,자동차부품,
+066570.KS,LG전자,KR,가전,
+009150.KS,삼성전기,KR,전자부품,semi
+018260.KS,삼성에스디에스,KR,IT서비스,net
+017670.KS,SK텔레콤,KR,통신,
+030200.KS,KT,KR,통신,
+033780.KS,KT&G,KR,담배·생활,
+011200.KS,HMM,KR,해운,
+028260.KS,삼성물산,KR,지주,
+003550.KS,LG,KR,지주,
+034730.KS,SK,KR,지주,
+247540.KQ,에코프로비엠,KR,2차전지소재(코스닥),bat
+086520.KQ,에코프로,KR,2차전지소재(코스닥),bat
+196170.KQ,알테오젠,KR,바이오(코스닥),bio
+028300.KQ,HLB,KR,바이오(코스닥),bio
+141080.KQ,리가켐바이오,KR,바이오(코스닥),bio
+277810.KQ,레인보우로보틱스,KR,로봇(코스닥),robot
+058470.KQ,리노공업,KR,반도체부품(코스닥),semi
+AAPL,애플,US,기술,
+MSFT,마이크로소프트,US,기술,
+NVDA,엔비디아,US,반도체,semi
+AVGO,브로드컴,US,반도체,semi
+AMD,AMD,US,반도체,semi
+QCOM,퀄컴,US,반도체,semi
+TXN,텍사스인스트루먼트,US,반도체,semi
+MU,마이크론,US,반도체,semi
+AMAT,어플라이드머티리얼즈,US,반도체장비,semi
+GOOGL,알파벳(구글),US,인터넷,net
+META,메타,US,인터넷,net
+AMZN,아마존,US,인터넷·쇼핑,net
+NFLX,넷플릭스,US,미디어,net
+DIS,디즈니,US,미디어,
+UBER,우버,US,인터넷,net
+TSLA,테슬라,US,자동차,bat|ess|robot
+ORCL,오라클,US,소프트웨어,
+CRM,세일즈포스,US,소프트웨어,
+ADBE,어도비,US,소프트웨어,
+NOW,서비스나우,US,소프트웨어,
+INTU,인튜이트,US,소프트웨어,
+PLTR,팔란티어,US,소프트웨어,
+IBM,IBM,US,IT서비스,
+CSCO,시스코,US,네트워크,
+BRK-B,버크셔해서웨이,US,지주,fin
+JPM,JP모건,US,금융,fin
+BAC,뱅크오브아메리카,US,금융,fin
+WFC,웰스파고,US,금융,fin
+GS,골드만삭스,US,금융,fin
+V,비자,US,결제,fin
+MA,마스터카드,US,결제,fin
+LLY,일라이릴리,US,제약,bio
+JNJ,존슨앤드존슨,US,제약,bio
+ABBV,애브비,US,제약,bio
+MRK,머크,US,제약,bio
+UNH,유나이티드헬스,US,헬스케어,bio
+TMO,써모피셔,US,헬스케어,bio
+ABT,애보트,US,헬스케어,bio
+ISRG,인튜이티브서지컬,US,의료기기,robot|bio
+WMT,월마트,US,유통,
+COST,코스트코,US,유통,
+HD,홈디포,US,유통,
+MCD,맥도날드,US,외식,
+KO,코카콜라,US,음료,
+PEP,펩시코,US,음료,
+PG,P&G,US,생활용품,
+XOM,엑슨모빌,US,에너지,
+CVX,셰브론,US,에너지,
+LIN,린데,US,소재,
+GE,GE에어로스페이스,US,항공·방산,defense|power
+CAT,캐터필러,US,기계,power
+T,AT&T,US,통신,
 AMGN,암젠,US,바이오,bio
 GILD,길리어드,US,바이오,bio
 VRTX,버텍스,US,바이오,bio
@@ -145,3 +145,108 @@ PWR,콴타서비스,US,전력망 공사,power
 ROK,록웰오토메이션,US,공장 자동화,robot
 TER,테라다인,US,로봇·반도체장비,robot
 SYM,심보틱,US,물류 로봇,robot
+000100.KS,유한양행,KR,제약,bio
+011170.KS,롯데케미칼,KR,화학,
+010950.KS,S-Oil,KR,정유,
+003490.KS,대한항공,KR,항공,
+097950.KS,CJ제일제당,KR,식품,
+271560.KS,오리온,KR,과자,
+004020.KS,현대제철,KR,철강,
+047810.KS,한국항공우주,KR,항공·방산,defense
+079550.KS,LIG넥스원,KR,미사일·방산,defense
+272210.KS,한화시스템,KR,방산 전자,defense
+000720.KS,현대건설,KR,건설·원전,power
+028050.KS,삼성E&A,KR,플랜트 건설,
+352820.KS,하이브,KR,연예기획,net
+036570.KS,엔씨소프트,KR,게임,net
+251270.KS,넷마블,KR,게임,net
+086280.KS,현대글로비스,KR,물류,
+161390.KS,한국타이어앤테크놀로지,KR,타이어,
+090430.KS,아모레퍼시픽,KR,화장품,
+051900.KS,LG생활건강,KR,화장품·생활용품,
+032640.KS,LG유플러스,KR,통신,
+008770.KS,호텔신라,KR,면세점,
+139480.KS,이마트,KR,마트,
+005830.KS,DB손해보험,KR,보험,fin
+001450.KS,현대해상,KR,보험,fin
+071050.KS,한국금융지주,KR,증권,fin
+006800.KS,미래에셋증권,KR,증권,fin
+039490.KS,키움증권,KR,증권,fin
+016360.KS,삼성증권,KR,증권,fin
+042700.KS,한미반도체,KR,반도체 장비,semi
+000990.KS,DB하이텍,KR,반도체,semi
+240810.KQ,원익IPS,KR,반도체 장비(코스닥),semi
+403870.KQ,HPSP,KR,반도체 장비(코스닥),semi
+357780.KQ,솔브레인,KR,반도체 소재(코스닥),semi
+039030.KQ,이오테크닉스,KR,반도체 장비(코스닥),semi
+095340.KQ,ISC,KR,반도체 부품(코스닥),semi
+145020.KQ,휴젤,KR,보톡스(코스닥),bio
+214150.KQ,클래시스,KR,미용 의료기기(코스닥),bio
+263750.KQ,펄어비스,KR,게임(코스닥),net
+293490.KQ,카카오게임즈,KR,게임(코스닥),net
+041510.KQ,에스엠,KR,연예기획(코스닥),net
+035900.KQ,JYP Ent.,KR,연예기획(코스닥),net
+122870.KQ,와이지엔터테인먼트,KR,연예기획(코스닥),net
+112040.KQ,위메이드,KR,게임(코스닥),net
+064760.KQ,티씨케이,KR,반도체 소재(코스닥),semi
+TSM,TSMC,US,반도체 위탁생산,semi
+ASML,ASML,US,반도체 장비,semi
+KLAC,KLA,US,반도체 장비,semi
+LRCX,램리서치,US,반도체 장비,semi
+ADI,아날로그디바이스,US,반도체,semi
+MRVL,마벨,US,반도체,semi
+ARM,ARM,US,반도체 설계,semi
+INTC,인텔,US,반도체,semi
+SNPS,시놉시스,US,반도체 설계 프로그램,semi
+CDNS,케이던스,US,반도체 설계 프로그램,semi
+PANW,팔로알토,US,사이버보안,net
+CRWD,크라우드스트라이크,US,사이버보안,net
+FTNT,포티넷,US,사이버보안,net
+SHOP,쇼피파이,US,온라인 쇼핑몰 도구,net
+SPOT,스포티파이,US,음악,net
+ABNB,에어비앤비,US,숙박 공유,net
+BKNG,부킹홀딩스,US,여행 예약,net
+PYPL,페이팔,US,결제,fin
+COIN,코인베이스,US,코인 거래소,fin
+TMUS,T모바일,US,통신,
+VZ,버라이즌,US,통신,
+NKE,나이키,US,신발·옷,
+SBUX,스타벅스,US,커피,
+LOW,로우스,US,집 수리 용품,
+TJX,TJX,US,할인 의류,
+ADP,ADP,US,급여 관리,
+AXP,아메리칸익스프레스,US,카드,fin
+MS,모건스탠리,US,투자은행,fin
+SCHW,찰스슈왑,US,증권,fin
+BLK,블랙록,US,자산운용,fin
+C,씨티그룹,US,은행,fin
+SPGI,S&P글로벌,US,신용평가,fin
+PGR,프로그레시브,US,자동차보험,fin
+CB,처브,US,보험,fin
+AMT,아메리칸타워,US,통신탑 리츠,
+PLD,프로로지스,US,물류창고 리츠,
+EQIX,에퀴닉스,US,데이터센터 리츠,power
+NEE,넥스트에라에너지,US,전기·재생에너지,power|ess
+DUK,듀크에너지,US,전기,power
+SO,서던컴퍼니,US,전기,power
+UNP,유니언퍼시픽,US,철도,
+UPS,UPS,US,택배,
+HON,하니웰,US,산업 기계,robot
+LMT,록히드마틴,US,방산,defense
+RTX,RTX,US,방산·항공,defense
+NOC,노스롭그루먼,US,방산,defense
+GD,제너럴다이내믹스,US,방산·군함,defense
+DE,디어,US,농기계,robot
+BA,보잉,US,비행기,defense
+MDT,메드트로닉,US,의료기기,bio
+SYK,스트라이커,US,의료기기,bio|robot
+BSX,보스턴사이언티픽,US,의료기기,bio
+DHR,다나허,US,의료 장비,bio
+BMY,BMS,US,제약,bio
+PFE,화이자,US,제약,bio
+ZTS,조에티스,US,동물약,bio
+PM,필립모리스,US,담배,
+MDLZ,몬델리즈,US,과자,
+CL,콜게이트,US,생활용품,
+COP,코노코필립스,US,석유,
+SLB,슐럼버거,US,석유 서비스,
