@@ -2,8 +2,8 @@ name: 개별종목 추천 봇
 
 on:
   schedule:
-    # 한국시간 화~토 오전 7시 23분 (미국장 마감 직후, 한국장 전날 종가 반영)
-    - cron: "23 22 * * 1-5"
+    # 한국시간 화~토 오전 7시 13분 (미국장 마감 직후, 한국장 전날 종가 반영)
+    - cron: "13 22 * * 1-5"
   workflow_dispatch: {}   # Actions 화면에서 "Run workflow" 버튼으로 바로 실행
   push:                   # 종목 목록이나 코드를 고치면 바로 한 번 실행
     branches: [main]
