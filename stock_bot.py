@@ -439,7 +439,7 @@ def build_table(universe, closes, funds, today):
 def picks(df):
     return {
         "overall": df[df.above_ma200].nlargest(5, "total"),
-        "momentum": df[df.above_ma200].nlargest(TOP_N, "mom_score"),
+        "momentum": df[df.above_ma200 & (df.mom_raw > 0)].nlargest(TOP_N, "mom_score"),
         "rebound": df[df.rebound_ok].nlargest(TOP_N, "rebound_score"),
         "stable": df[df.stab_ok].nlargest(TOP_N, "stab_score"),
         "value": df[df.value_ok].nlargest(TOP_N, "fin_score"),
@@ -504,7 +504,7 @@ def phone_message(df, long, today):
         out.append(f"\n{label}")
         top = p["overall"].head(2)
         if top.empty:
-            out.append("🏆 오늘의 추천: 없음")
+            out.append("🏆 오늘의 추천: 요즘 오르는 회사가 없어요 (다들 쉬는 중)")
         for i, (_, r) in enumerate(top.iterrows(), 1):
             tags = (" 🔥" if r.overheated else "") + (f" 📢성적표 {dday(r.earn_days)}" if earn_soon(r) else "")
             out.append(f"🏆{i}등 {FLAG.get(r.market, '')}{r['name']} ({r.total:.0f}점){tags}")
