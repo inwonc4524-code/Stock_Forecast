@@ -109,6 +109,18 @@ def fetch_prices(tickers):
                 closes[t] = s
         except Exception:
             pass
+    # 잠깐 오류로 못 받은 종목은 하나씩 한 번 더 받아오기
+    retry = [t for t in tickers if t not in closes]
+    if retry:
+        raw_r = yf.download(retry, period="max", auto_adjust=False,
+                            progress=False, group_by="ticker", threads=False)
+        for t in retry:
+            try:
+                s = _pick(raw_r, t, t)
+                if len(s) > 0:
+                    closes[t] = s
+            except Exception:
+                pass
     # 한국 종목은 코스피(.KS)·코스닥(.KQ)을 잘못 적었을 수 있어서 반대로 한 번 더 시도
     swap = {t: t[:-3] + (".KQ" if t.endswith(".KS") else ".KS")
             for t in tickers if t not in closes and t.endswith((".KS", ".KQ"))}
