@@ -328,8 +328,18 @@ def fetch_fundamentals(tickers, today):
             print(f"{t} 실적발표일 못 읽음: {e}")
             return None
 
-    with ThreadPoolExecutor(max_workers=6) as ex:
+    with ThreadPoolExecutor(max_workers=4) as ex:
         out = dict(ex.map(one, tickers))
+    # 야후가 잠깐 막아서 비어 있는 곳은 천천히 한 번 더
+    import time
+    empty = [t for t, v in out.items() if all(pd.isna(v[k]) for k in ("per", "pbr", "roe", "growth"))]
+    if empty:
+        print(f"재무지표가 비어 있어 다시 받는 곳: {len(empty)}개")
+        for t in empty:
+            time.sleep(0.6)
+            t2, v = one(t)
+            if not all(pd.isna(v[k]) for k in ("per", "pbr", "roe", "growth")):
+                out[t2] = v
     got = sum(1 for v in out.values() if not pd.isna(v["per"]) or not pd.isna(v["roe"]))
     print(f"재무지표를 받은 종목: {got}/{len(tickers)}")
     return out
