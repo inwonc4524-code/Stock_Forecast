@@ -118,6 +118,27 @@ def next_earnings(tk, info, today):
     return future[0] if future else None
 
 
+def naver_kr(ticker):
+    """한국 종목의 PER·PBR을 네이버 증권에서 받아옵니다 (야후에 없을 때 대신 사용).
+    값이 없거나 '적자' 등으로 숫자가 아니면 NaN."""
+    code = ticker.split(".")[0]
+    try:
+        r = requests.get(f"https://m.stock.naver.com/api/stock/{code}/integration",
+                         headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+        r.raise_for_status()
+        infos = r.json().get("totalInfos") or []
+    except Exception as e:
+        print(f"{ticker} 네이버 자료 못 받음: {e}")
+        return {}
+    vals = {}
+    for it in infos:
+        key = str(it.get("code") or it.get("key") or "").lower()
+        raw = str(it.get("value") or "").replace(",", "").replace("배", "").replace("원", "").strip()
+        vals[key] = num(raw)
+    return {"per": vals.get("per", np.nan), "pbr": vals.get("pbr", np.nan),
+            "eps": vals.get("eps", np.nan), "_keys": list(vals)}
+
+
 def fetch_fundamentals(tickers, today):
     """종목마다 PER·PBR·ROE·이익 성장·실적발표일을 받아옵니다. 못 받으면 빈칸."""
     import yfinance as yf
@@ -144,10 +165,16 @@ def fetch_fundamentals(tickers, today):
             bv = num(info.get("bookValue"))
             if not pd.isna(bv) and not pd.isna(price) and bv > 0:
                 pbr = price / bv
-        if t == "005930.KS":   # 한국 종목 자료가 어떻게 오는지 확인용
-            print("005930.KS 재무 항목:", {k: info.get(k) for k in (
-                "currentPrice", "trailingPE", "forwardPE", "trailingEps", "priceToBook",
-                "bookValue", "returnOnEquity", "earningsGrowth", "financialCurrency", "currency")})
+        if t.endswith((".KS", ".KQ")) and (pd.isna(per) or pd.isna(pbr)):
+            nv = naver_kr(t)
+            if t == "005930.KS":   # 네이버 자료가 어떻게 오는지 확인용
+                print("005930 네이버:", nv)
+            if pd.isna(per):
+                per = nv.get("per", np.nan)
+                if pd.isna(per) and nv.get("eps", np.nan) < 0:
+                    per = -1.0   # 주당순이익이 마이너스 = 적자
+            if pd.isna(pbr):
+                pbr = nv.get("pbr", np.nan)
         return t, {
             "per": per,
             "pbr": pbr,
