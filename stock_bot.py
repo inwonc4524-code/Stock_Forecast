@@ -1,0 +1,746 @@
+"""
+개별종목 추천 봇
+- stocks.csv 에 적힌 한국·미국 대형주의 가격과 재무지표(PER·PBR·ROE·이익 성장)를 받아와서
+  ① 요즘 추천 (오늘의 추천 / 쑥쑥 / 쉬는 중 / 꾸준 / 실속)
+  ② 오래 꾸준히 오른 종목 (1주·1달·1·3·5·10·20년)
+  을 계산하고, 곧 실적발표가 있는 종목을 표시해서
+  휴대폰(ntfy)으로 요약을 보내고, docs/index.html 대시보드를 만듭니다.
+
+실행:
+  python stock_bot.py          # 실제 데이터 (GitHub Actions에서 자동 실행)
+  python stock_bot.py --demo   # 가짜 데이터로 동작 확인 (인터넷 없이)
+
+※ 이 봇의 결과는 과거 가격·재무 자료로 계산한 참고 자료일 뿐, 투자 권유가 아닙니다.
+"""
+
+import argparse
+import html
+import json
+import math
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date, datetime, timedelta, timezone
+
+import numpy as np
+import pandas as pd
+import requests
+
+KST = timezone(timedelta(hours=9))
+HERE = os.path.dirname(os.path.abspath(__file__))
+DOCS = os.path.join(HERE, "docs")
+TOP_N = 3                    # 카드마다 보여줄 개수
+LONG_SHOW = 10               # '오래 꾸준히' 목록에 보여줄 개수
+MIN_DAYS = 220               # 이보다 데이터가 짧으면(상장 1년 미만 등) 제외
+EARN_SOON = 14               # 실적발표가 며칠 안으로 다가오면 📢 표시할지
+EARN_ALERT = 7               # 휴대폰 알림에 '곧 실적발표'로 넣을 기간(일)
+PERIODS = ["1w", "1m", 1, 3, 5, 10, 20]
+PERIOD_INFO = {   # 기간: (버튼 이름, 칸 하나의 단위, 세는 말, 기간 이름)
+    "1w": ("1주", "날", "일", "1주"), "1m": ("1달", "날", "일", "1달"),
+    1: ("1년", "달", "달", "1년"), 3: ("3년", "해", "번", "3년"), 5: ("5년", "해", "번", "5년"),
+    10: ("10년", "해", "번", "10년"), 20: ("20년", "해", "번", "20년"),
+}
+
+MARKETS = [("KR", "🇰🇷", "한국"), ("US", "🇺🇸", "미국")]
+FLAG = {c: f for c, f, _ in MARKETS}
+
+
+# ───────────────────────── 1. 데이터 받아오기 ─────────────────────────
+
+def load_universe():
+    return pd.read_csv(os.path.join(HERE, "stocks.csv"), dtype=str)
+
+
+def fetch_prices(tickers):
+    """야후 파이낸스에서 상장 이후 전체 기간의 가격(배당·액면분할 반영 수정종가)을 받아옵니다."""
+    import yfinance as yf
+
+    raw = yf.download(tickers, period="max", auto_adjust=True,
+                      progress=False, group_by="ticker", threads=True)
+    closes = {}
+    for t in tickers:
+        try:
+            s = raw[t]["Close"] if isinstance(raw.columns, pd.MultiIndex) else raw["Close"]
+            s = s.dropna()
+            s = s[s > 0]
+            if len(s) > 0:
+                closes[t] = s
+        except Exception:
+            pass
+    missing = [t for t in tickers if t not in closes]
+    if missing:
+        print("가격을 못 받은 종목:", ", ".join(missing))
+    return closes
+
+
+def num(v):
+    """숫자로 바꿀 수 없거나 무한대면 NaN"""
+    try:
+        v = float(v)
+        return v if math.isfinite(v) else np.nan
+    except (TypeError, ValueError):
+        return np.nan
+
+
+def _to_date(v):
+    try:
+        if isinstance(v, (int, float)):
+            return datetime.fromtimestamp(v, KST).date()
+        if isinstance(v, datetime):
+            return v.date()
+        if isinstance(v, date):
+            return v
+        return pd.Timestamp(v).date()
+    except Exception:
+        return None
+
+
+def next_earnings(tk, info, today):
+    """다가오는 실적발표일 (모르면 None)"""
+    cands = [_to_date(info.get(k)) for k in ("earningsTimestampStart", "earningsTimestamp")]
+    try:
+        cal = tk.calendar
+        if isinstance(cal, dict):
+            ed = cal.get("Earnings Date") or []
+            cands += [_to_date(d) for d in (ed if isinstance(ed, (list, tuple)) else [ed])]
+    except Exception:
+        pass
+    future = sorted(d for d in cands if d and d >= today)
+    return future[0] if future else None
+
+
+def fetch_fundamentals(tickers, today):
+    """종목마다 PER·PBR·ROE·이익 성장·실적발표일을 받아옵니다. 못 받으면 빈칸."""
+    import yfinance as yf
+
+    def one(t):
+        tk = yf.Ticker(t)
+        try:
+            info = tk.info or {}
+        except Exception:
+            info = {}
+        growth = num(info.get("earningsGrowth"))
+        if pd.isna(growth):
+            growth = num(info.get("earningsQuarterlyGrowth"))
+        return t, {
+            "per": num(info.get("trailingPE")),
+            "pbr": num(info.get("priceToBook")),
+            "roe": num(info.get("returnOnEquity")),
+            "growth": growth,
+            "margin": num(info.get("profitMargins")),
+            "earn": next_earnings(tk, info, today),
+        }
+
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        out = dict(ex.map(one, tickers))
+    got = sum(1 for v in out.values() if not pd.isna(v["per"]) or not pd.isna(v["roe"]))
+    print(f"재무지표를 받은 종목: {got}/{len(tickers)}")
+    return out
+
+
+def demo_prices(tickers, seed=7):
+    """인터넷 없이 테스트할 때 쓰는 가짜 가격 (종목마다 2~25년치)."""
+    rng = np.random.default_rng(seed)
+    closes = {}
+    for t in tickers:
+        years = int(rng.integers(2, 26))
+        idx = pd.bdate_range(end=datetime.now(KST).date(), periods=252 * years)
+        drift = rng.normal(0.0004, 0.0006)
+        vol = rng.uniform(0.010, 0.035)
+        r = rng.normal(drift, vol, len(idx))
+        r[-25:] += rng.normal(0, 0.006)
+        closes[t] = pd.Series(10000 * np.exp(np.cumsum(r)), index=idx)
+    return closes
+
+
+def demo_fundamentals(tickers, today, seed=11):
+    rng = np.random.default_rng(seed)
+    out = {}
+    for t in tickers:
+        loss = rng.random() < 0.1
+        roe = rng.normal(-0.08, 0.05) if loss else rng.uniform(0.02, 0.35)
+        out[t] = {
+            "per": np.nan if loss else float(rng.uniform(5, 60)),
+            "pbr": float(rng.uniform(0.4, 12)),
+            "roe": float(roe),
+            "growth": float(rng.normal(0.08, 0.3)),
+            "margin": float(roe / 2),
+            "earn": today + timedelta(days=int(rng.integers(0, 90))) if rng.random() < 0.8 else None,
+        }
+    return out
+
+
+# ───────────────────────── 2. 요즘 지표 계산 ─────────────────────────
+
+def rsi(series, period=14):
+    delta = series.diff()
+    gain = delta.clip(lower=0).ewm(alpha=1 / period, adjust=False).mean()
+    loss = (-delta.clip(upper=0)).ewm(alpha=1 / period, adjust=False).mean()
+    rs = gain / loss.replace(0, np.nan)
+    return float((100 - 100 / (1 + rs)).iloc[-1])
+
+
+def ret(s, days):
+    return float(s.iloc[-1] / s.iloc[-1 - days] - 1) if len(s) > days else np.nan
+
+
+def indicators(s):
+    s = s.dropna()
+    last_year = s.iloc[-252:]
+    ma200 = s.rolling(200).mean()
+    daily = s.pct_change().dropna()
+    running_max = last_year.cummax()
+    return {
+        "price": float(s.iloc[-1]),
+        "date": s.index[-1].strftime("%Y-%m-%d"),
+        "since": s.index[0].strftime("%Y-%m-%d"),
+        "r1w": ret(s, 5),
+        "r1m": ret(s, 21),
+        "r3m": ret(s, 63),
+        "r6m": ret(s, 126),
+        "r12m": ret(s, 252),
+        "above_ma200": bool(s.iloc[-1] > ma200.iloc[-1]),
+        "ma200_rising": bool(ma200.iloc[-1] > ma200.iloc[-21]),
+        "rsi14": rsi(s),
+        "vol60": float(daily.iloc[-60:].std() * np.sqrt(252)),
+        "mdd1y": float((last_year / running_max - 1).min()),
+        "from_high": float(s.iloc[-1] / last_year.max() - 1),
+    }
+
+
+def pct_rank(series, ascending=True):
+    r = series.rank(pct=True, ascending=ascending)
+    return (r * 100).round(1)
+
+
+def score(df):
+    """한 시장(한국 또는 미국) 안에서 서로 비교해 점수를 매깁니다."""
+    df = df.copy()
+    # 쑥쑥: 1·3·6개월 수익률 가중 평균, 200일 평균선 아래면 반으로 깎음
+    df["mom_raw"] = 0.2 * df.r1m + 0.4 * df.r3m + 0.4 * df.r6m
+    df["mom_score"] = pct_rank(df.mom_raw)
+    df.loc[~df.above_ma200, "mom_score"] *= 0.5
+
+    # 쉬는 중: 긴 흐름(200일 평균선)은 오르는 중인데 요즘 많이 내려온 것 (적자 회사는 제외)
+    df["rebound_score"] = (0.5 * pct_rank(df.rsi14, ascending=False)
+                           + 0.5 * pct_rank(df.from_high, ascending=False)).round(1)
+    df["rebound_ok"] = (df.ma200_rising & ((df.rsi14 < 40) | (df.from_high <= -0.10))
+                        & ~(df.roe < 0))
+
+    # 천천히 꾸준히: 흔들림·최대 하락폭이 작고 6개월 수익은 플러스
+    df["stab_score"] = (0.6 * pct_rank(df.vol60, ascending=False)
+                        + 0.4 * pct_rank(df.mdd1y)).round(1)
+    df["stab_ok"] = df.r6m > 0
+
+    # 실속(재무): PER·PBR은 낮을수록, ROE·이익 성장은 높을수록 좋음
+    loss = (df.roe < 0) | (df.per <= 0)
+    per_s = pct_rank(df.per.where(df.per > 0), ascending=False)
+    per_s[loss] = 10
+    pbr_s = pct_rank(df.pbr.where(df.pbr > 0), ascending=False)
+    roe_s = pct_rank(df.roe)
+    gr_s = pct_rank(df.growth)
+    parts = pd.concat([per_s, pbr_s, roe_s, gr_s], axis=1)
+    df["fin_score"] = parts.mean(axis=1, skipna=True).round(1).where(parts.notna().sum(axis=1) >= 2)
+    df["value_ok"] = df.fin_score.notna() & (df.roe > 0) & (df.per > 0)
+
+    # 오늘의 추천: 쑥쑥 45% + 안정 25% + 실속 30% (재무 자료가 없으면 쑥쑥 60% + 안정 40%)
+    with_fin = 0.45 * df.mom_score + 0.25 * df.stab_score + 0.30 * df.fin_score
+    no_fin = 0.6 * df.mom_score + 0.4 * df.stab_score
+    df["total"] = with_fin.fillna(no_fin).round(1)
+    df.loc[df.rsi14 >= 75, "total"] -= 10
+    df.loc[loss, "total"] -= 10
+    df["overheated"] = df.rsi14 >= 70
+    df["loss"] = loss
+    return df
+
+
+# ───────────────────────── 3. 오래 꾸준히 오른 종목 ─────────────────────────
+
+def long_term(s, years):
+    """기간 동안의 성적. 데이터가 모자라면 None.
+    1주·1달: 하루씩, 1년: 12달을 한 달씩, 3년 이상: 1년씩 잘라서 몇 번 올랐는지 셉니다."""
+    end = s.index[-1]
+    if years in ("1w", "1m"):
+        n = 5 if years == "1w" else 21
+        if len(s) < n + 1:
+            return None
+        w = s.iloc[-(n + 1):]
+        blocks = list((w / w.shift(1) - 1).iloc[1:])
+        total = float(w.iloc[-1] / w.iloc[0] - 1)
+        return {"total": total, "cagr": np.nan, "blocks": blocks,
+                "labels": [d.strftime("%m월 %d일") for d in w.index[1:]],
+                "ups": sum(b > 0 for b in blocks)}
+    start = end - pd.DateOffset(years=years)
+    if s.index[0] > start + pd.Timedelta(days=15):
+        return None
+    if years == 1:
+        cuts = [end - pd.DateOffset(months=m) for m in range(12, -1, -1)]
+        labels = [(c + pd.DateOffset(days=1)).strftime("%y년 %m월") for c in cuts[1:]]
+    else:
+        cuts = [end - pd.DateOffset(years=y) for y in range(years, -1, -1)]
+        labels = [f"{c.strftime('%Y.%m')}~{d.strftime('%Y.%m')}" for c, d in zip(cuts[:-1], cuts[1:])]
+    px = [float(s.asof(c)) for c in cuts]
+    blocks = [px[i + 1] / px[i] - 1 for i in range(len(px) - 1)]
+    total = px[-1] / px[0] - 1
+    return {
+        "total": total,
+        "cagr": (1 + total) ** (1 / years) - 1,
+        "blocks": blocks,
+        "labels": labels,
+        "ups": sum(b > 0 for b in blocks),
+    }
+
+
+def build_long(universe, closes):
+    out = {}
+    for y in PERIODS:
+        rows = []
+        for _, u in universe.iterrows():
+            s = closes.get(u.ticker)
+            if s is None or s.empty:
+                continue
+            lt = long_term(s.dropna(), y)
+            if lt:
+                rows.append({**u.to_dict(), **lt})
+        out[y] = rows
+    return out
+
+
+def long_rank(rows):
+    """올라간 횟수가 많은 순 → 같으면 1년 평균 수익률(또는 전체 수익률) 높은 순. 손해 본 건 제외."""
+    good = [r for r in rows if r["total"] > 0]
+    return sorted(good, key=lambda r: (r["ups"] / len(r["blocks"]),
+                                       r["total"] if pd.isna(r["cagr"]) else r["cagr"]),
+                  reverse=True)
+
+
+# ───────────────────────── 4. 공통 ─────────────────────────
+
+def build_table(universe, closes, funds, today):
+    rows = []
+    for _, u in universe.iterrows():
+        s = closes.get(u.ticker)
+        if s is None or len(s.dropna()) < MIN_DAYS:
+            continue
+        f = dict(funds.get(u.ticker, {}))
+        earn = f.pop("earn", None)
+        rows.append({**u.to_dict(), **indicators(s), **f,
+                     "earn": earn.isoformat() if earn else "",
+                     "earn_days": (earn - today).days if earn else np.nan})
+    if not rows:
+        raise SystemExit("계산할 수 있는 종목이 없습니다. 데이터 연결을 확인하세요.")
+    df = pd.DataFrame(rows)
+    for c in ("per", "pbr", "roe", "growth", "margin"):
+        if c not in df:
+            df[c] = np.nan
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    return pd.concat([score(g) for _, g in df.groupby("market", sort=False)], ignore_index=True)
+
+
+def picks(df):
+    return {
+        "overall": df[df.above_ma200].nlargest(5, "total"),
+        "momentum": df[df.above_ma200].nlargest(TOP_N, "mom_score"),
+        "rebound": df[df.rebound_ok].nlargest(TOP_N, "rebound_score"),
+        "stable": df[df.stab_ok].nlargest(TOP_N, "stab_score"),
+        "value": df[df.value_ok].nlargest(TOP_N, "fin_score"),
+    }
+
+
+def pct(x):
+    return "-" if pd.isna(x) else f"{x * 100:+.0f}%" if abs(x) >= 0.1 else f"{x * 100:+.1f}%"
+
+
+def shake(v):
+    """흔들림(1년 환산 변동성)을 쉬운 말로 — 개별종목은 ETF보다 원래 많이 흔들려요"""
+    if v < 0.25:
+        return "작음"
+    if v < 0.40:
+        return "보통"
+    return "큼"
+
+
+def times(v):
+    return "-" if pd.isna(v) or v <= 0 else f"{v:.1f}배" if v < 100 else f"{v:.0f}배"
+
+
+def per_text(r):
+    return "적자" if r["loss"] else times(r["per"])
+
+
+def dday(d):
+    if pd.isna(d):
+        return ""
+    return "오늘" if d == 0 else f"D-{int(d)}"
+
+
+def earn_soon(r, days=EARN_SOON):
+    return not pd.isna(r["earn_days"]) and 0 <= r["earn_days"] <= days
+
+
+def short_ticker(t):
+    return t.split(".")[0]
+
+
+def won(total):
+    """100만 원이 얼마가 됐는지"""
+    v = 100 * (1 + total)
+    return f"{v:,.0f}만 원" if v < 10000 else f"{v / 10000:.1f}억 원"
+
+
+# ───────────────────────── 5. 휴대폰 알림 ─────────────────────────
+
+def phone_message(df, long, today):
+    out = [f"📅 {today} 기준"]
+    for code, flag, label in MARKETS:
+        sub = df[df.market == code]
+        if sub.empty:
+            continue
+        p = picks(sub)
+        out.append(f"\n{flag} {label}")
+        top = p["overall"].head(3)
+        if top.empty:
+            out.append("🏆 추천: 없음")
+        for i, (_, r) in enumerate(top.iterrows(), 1):
+            tags = (" 🔥" if r.overheated else "") + (f" 📢{dday(r.earn_days)}" if earn_soon(r) else "")
+            out.append(f"🏆{i} {r['name']} 점수 {r.total:.0f}{tags}")
+        for icon, key, extra in [
+            ("🚀 쑥쑥", "momentum", lambda r: f"6달 {pct(r.r6m)}"),
+            ("🎢 쉬는중", "rebound", lambda r: f"최고점보다 {pct(r.from_high)}"),
+            ("🐢 꾸준", "stable", lambda r: f"흔들림 {shake(r.vol60)}"),
+            ("💎 실속", "value", lambda r: f"PER {times(r.per)} · ROE {pct(r.roe)}"),
+        ]:
+            rows = p[key]
+            if rows.empty:
+                out.append(f"{icon}: 없음")
+            else:
+                r = rows.iloc[0]
+                out.append(f"{icon}: {r['name']} {extra(r)}{' 🔥' if r.overheated else ''}")
+
+    soon = df[df.apply(lambda r: earn_soon(r, EARN_ALERT), axis=1)].sort_values("earn_days")
+    if not soon.empty:
+        names = ", ".join(f"{FLAG.get(r.market, '')}{r['name']} {dday(r.earn_days)}"
+                          for _, r in soon.head(8).iterrows())
+        more = f" 외 {len(soon) - 8}개" if len(soon) > 8 else ""
+        out.append(f"\n📢 일주일 안에 실적발표: {names}{more}")
+
+    best = long_rank(long.get(10, []))
+    if best:
+        b = best[0]
+        out.append(f"\n🌱 10년 꾸준히 1등: {FLAG.get(b['market'], '')} {b['name']}"
+                   f" — 10번 중 {b['ups']}번 오름, 100만 원 → {won(b['total'])}")
+    out.append("\n🔥 = 너무 빨리 올라서 조심 · 📢 = 곧 실적발표(주가가 크게 움직일 수 있음)")
+    out.append("※ 지난 자료로 계산한 참고용이에요. 투자 권유가 아니에요.")
+    return "\n".join(out)
+
+
+def send_ntfy(title, message, click_url):
+    topic = os.environ.get("NTFY_TOPIC")
+    if not topic:
+        print("NTFY_TOPIC 이 없어서 알림은 건너뜁니다.")
+        return
+    payload = {"topic": topic, "title": title, "message": message,
+               "tags": ["chart_with_upwards_trend"]}
+    if click_url:
+        payload["click"] = click_url
+        payload["actions"] = [{"action": "view", "label": "대시보드 열기", "url": click_url}]
+    r = requests.post("https://ntfy.sh/", data=json.dumps(payload).encode("utf-8"),
+                      headers={"Content-Type": "application/json"}, timeout=20)
+    print("ntfy 전송:", r.status_code)
+
+
+# ───────────────────────── 6. 웹 대시보드 ─────────────────────────
+
+E = html.escape
+
+
+def badges(r):
+    b = ""
+    if r.overheated:
+        b += "<i>🔥 너무 빨리 오름</i>"
+    if earn_soon(r):
+        b += f"<i class='ev'>📢 실적 {dday(r.earn_days)}</i>"
+    if r["loss"]:
+        b += "<i class='ls'>적자</i>"
+    return b
+
+
+def item_html(r, metric):
+    return (f"<li><div><b>{E(r['name'])}</b>"
+            f"<span class='tk'>{FLAG.get(r.market, '')} {E(short_ticker(r.ticker))} · {E(r.category)}</span></div>"
+            f"<span class='m'>{metric}{badges(r)}</span></li>")
+
+
+def card(title, desc, rows, metric_fn):
+    items = "".join(item_html(r, metric_fn(r)) for _, r in rows.iterrows()) \
+        or "<li class='empty'>오늘은 여기에 맞는 종목이 없어요</li>"
+    return f"<section class='card'><h2>{title}</h2><p>{desc}</p><ol>{items}</ol></section>"
+
+
+def updown(v, text=None):
+    if pd.isna(v):
+        return "-"
+    cls = "up" if v > 0 else "down" if v < 0 else ""
+    return f"<span class='{cls}'>{text or pct(v)}</span>"
+
+
+def recent_panel(sub, mk):
+    p = picks(sub)
+    cards = (
+        card("🏆 오늘의 추천", "요즘 잘 오르고, 덜 출렁이고, 회사 성적도 괜찮은 종목이에요",
+             p["overall"], lambda r: f"점수 {r.total:.0f}") +
+        card("🚀 요즘 쑥쑥 오르는 중", "최근 1~6달 동안 주가가 많이 오른 종목이에요",
+             p["momentum"], lambda r: f"6달 동안 {updown(r.r6m)}") +
+        card("🎢 잠깐 쉬는 중", "원래 잘 오르던 종목인데 요즘 내려왔어요(적자 회사는 뺐어요). 다시 오를 수도, 더 내려갈 수도 있어요",
+             p["rebound"], lambda r: f"최고점보다 {updown(r.from_high)}") +
+        card("🐢 천천히 꾸준히", "주가가 덜 흔들리고 6달 동안 조금이라도 오른 종목이에요",
+             p["stable"], lambda r: f"흔들림 {shake(r.vol60)}") +
+        card("💎 실속 있는 회사", "버는 돈에 비해 주가가 싸고(PER·PBR 낮음), 돈을 잘 버는(ROE·이익 성장 높음) 회사예요",
+             p["value"], lambda r: f"<span>PER {times(r.per)} · ROE {updown(r.roe)}</span>")
+    )
+
+    cols = [("name", "이름"), ("category", "업종"), ("r1m", "1달"), ("r3m", "3달"),
+            ("r6m", "6달"), ("r12m", "1년"), ("from_high", "최고점보다"), ("vol60", "흔들림"),
+            ("per", "PER"), ("pbr", "PBR"), ("roe", "ROE"), ("growth", "이익 성장"),
+            ("earn_days", "실적발표"), ("total", "점수")]
+
+    def cell(c, r):
+        v = r[c]
+        if c == "name":
+            marks = (" 🔥" if r.overheated else "") + (" 📢" if earn_soon(r) else "")
+            return f"<td>{FLAG.get(r.market, '')} {E(str(v))}{marks}</td>"
+        if c == "category":
+            return f"<td>{E(str(v))}</td>"
+        if c == "vol60":
+            return f"<td data-v='{v:.4f}'>{shake(v)}</td>"
+        if c == "total":
+            return f"<td data-v='{v:.2f}'><b>{v:.0f}</b></td>"
+        if c == "per":
+            txt = per_text(r)
+            dv = v if not pd.isna(v) and v > 0 and not r["loss"] else 9999
+            return f"<td data-v='{dv:.2f}'>{txt}</td>"
+        if c == "pbr":
+            dv = v if not pd.isna(v) and v > 0 else 9999
+            return f"<td data-v='{dv:.2f}'>{times(v)}</td>"
+        if c == "earn_days":
+            if pd.isna(v):
+                return "<td data-v='9999'>-</td>"
+            return f"<td data-v='{v:.0f}' title='{E(r.earn)}'>{dday(v)}</td>"
+        if pd.isna(v):
+            return "<td data-v='-999'>-</td>"
+        return f"<td data-v='{v:.4f}'>{updown(v)}</td>"
+
+    tid = f"t-{mk}"
+    head = "".join(f"<th onclick=\"sortBy('{tid}',{i})\">{n}</th>" for i, (_, n) in enumerate(cols))
+    body = "".join("<tr>" + "".join(cell(c, r) for c, _ in cols) + "</tr>"
+                   for _, r in sub.sort_values("total", ascending=False).iterrows())
+
+    soon = sub[sub.apply(earn_soon, axis=1)].sort_values("earn_days")
+    soon_html = ""
+    if not soon.empty:
+        chips = "".join(f"<span class='chip'>{FLAG.get(r.market, '')} {E(r['name'])} <b>{dday(r.earn_days)}</b></span>"
+                        for _, r in soon.iterrows())
+        soon_html = (f"<section class='card soon'><h2>📢 곧 실적발표</h2>"
+                     f"<p>{EARN_SOON}일 안에 회사 성적표가 나와요. 발표 전후로 주가가 크게 오르내릴 수 있어요</p>"
+                     f"<div class='chips'>{chips}</div></section>")
+
+    return (f"<div class='grid'>{cards}</div>{soon_html}"
+            f"<h3>📋 전부 보기 <span class='hint'>맨 위 제목을 누르면 순서가 바뀌어요</span></h3>"
+            f"<div class='tbl'><table id='{tid}'><thead><tr>{head}</tr></thead>"
+            f"<tbody>{body}</tbody></table></div>")
+
+
+def long_panel(rows, years):
+    ranked = long_rank(rows)
+    _, unit, cnt, pname = PERIOD_INFO[years]
+    if not rows:
+        return (f"<p class='empty big'>여기엔 상장한 지 {pname}이 넘은 종목이 없어요.</p>")
+    items = []
+    for i, r in enumerate(ranked[:LONG_SHOW], 1):
+        boxes = "".join(
+            f"<span class='bx {'u' if b > 0 else 'd'}' title='{E(lb)}: {pct(b)}'></span>"
+            for b, lb in zip(r["blocks"], r["labels"]))
+        medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"{i}")
+        n_blocks = len(r["blocks"])
+        avg = " · 1년에 평균 " + updown(r["cagr"]) if isinstance(years, int) and years > 1 else ""
+        items.append(
+            f"<li class='lt'><div class='rk'>{medal}</div><div class='lb'>"
+            f"<b>{E(r['name'])}</b>"
+            f"<span class='tk'>{FLAG.get(r['market'], '')} {E(short_ticker(r['ticker']))} · {E(r['category'])}</span>"
+            f"<div class='boxes'>{boxes}</div>"
+            f"<span class='sm'>{n_blocks}{cnt} 중 <b>{r['ups']}{cnt}</b> 올랐어요{avg}</span></div>"
+            f"<div class='won'><small>100만 원이</small><b>{won(r['total'])}</b>"
+            f"<small>{updown(r['total'])}</small></div></li>")
+    lost = len(rows) - len(ranked)
+    note = f"이 기간 동안 손해 본 종목 {lost}개는 뺐어요. " if lost else ""
+    return (f"<p class='how'>🟥 = 그 {unit}에 올랐어요 &nbsp; 🟦 = 그 {unit}에 내렸어요 "
+            f"(칸을 누르고 있으면 날짜가 보여요)<br>{note}상장한 지 {pname}이 안 된 종목은 계산에서 빠져요.</p>"
+            f"<ol class='longlist'>{''.join(items) or '<li class=empty>조건에 맞는 종목이 없어요</li>'}</ol>")
+
+
+CSS = """
+:root{--bg:#f6f7f9;--fg:#1c1f24;--sub:#6b7280;--card:#fff;--line:#e5e7eb;--up:#e03131;--down:#1c7ed6;--acc:#6d28d9;--soft:#f1edfb}
+@media (prefers-color-scheme:dark){:root{--bg:#111316;--fg:#e8eaed;--sub:#9aa0a6;--card:#1b1e22;--line:#2c3036;--up:#ff6b6b;--down:#4dabf7;--acc:#a78bfa;--soft:#231d36}}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--fg);-webkit-text-size-adjust:100%}
+header{padding:22px 16px 6px;max-width:1100px;margin:auto}h1{font-size:23px;margin:0 0 4px}header p{color:var(--sub);margin:0;font-size:13px}
+.guide{max-width:1100px;margin:10px auto 0;padding:0 16px}
+.guide details{background:var(--soft);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.7}
+.guide summary{font-weight:700;cursor:pointer}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);max-width:1100px;margin:auto;padding:8px 16px 6px;display:flex;flex-direction:column;gap:6px}
+.row{display:flex;gap:5px}
+.row button{flex:1 1 0;min-width:0;letter-spacing:-.2px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:8px 4px;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap}
+.row.big button{font-size:15px;font-weight:700;padding:11px 4px;border-radius:12px}
+.row button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+main{max-width:1100px;margin:auto;padding:8px 16px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card h2{font-size:17px;margin:0 0 4px}.card p{font-size:13px;color:var(--sub);margin:0 0 10px;line-height:1.5}
+.soon{margin-top:12px}.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--soft);border-radius:999px;padding:5px 10px;font-size:13px}
+ol{margin:0;padding-left:20px}li{padding:8px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;font-size:15px}
+li:first-child{border-top:0}li div{display:flex;flex-direction:column}.tk{font-size:12px;color:var(--sub)}
+.m{white-space:nowrap;font-weight:700;font-size:14px;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+i{font-style:normal;background:#f59e0b22;color:#d97706;padding:1px 6px;border-radius:6px;font-size:11px;font-weight:600}
+i.ev{background:#7c3aed22;color:#7c3aed}i.ls{background:#6b728022;color:var(--sub)}
+.up{color:var(--up)}.down{color:var(--down)}
+.empty{color:var(--sub)}.big{font-size:15px;line-height:1.7;text-align:center;padding:30px 0}
+h3{margin:26px 0 8px;font-size:16px}.hint{font-weight:400;font-size:12px;color:var(--sub)}
+.tbl{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:16px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:9px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{cursor:pointer;color:var(--sub);font-weight:600;position:sticky;top:0;background:var(--card)}
+th:nth-child(-n+2),td:nth-child(-n+2){text-align:left}
+.how{font-size:13px;color:var(--sub);line-height:1.6;margin:4px 0 10px}
+.longlist{list-style:none;padding:0;background:var(--card);border:1px solid var(--line);border-radius:16px}
+.lt{padding:12px 14px;align-items:center}.rk{width:30px;flex:0 0 30px;font-size:18px;font-weight:700;text-align:center}
+.lb{flex:1;min-width:0;gap:2px}.lb .boxes{display:flex;flex-direction:row;flex-wrap:wrap;gap:3px;margin:5px 0 3px}
+.bx{width:14px;height:14px;border-radius:3px;display:inline-block}.bx.u{background:var(--up)}.bx.d{background:var(--down)}
+.sm{font-size:13px;color:var(--sub)}.sm b{color:var(--fg)}
+.won{text-align:right;flex:0 0 auto}.won b{font-size:17px}.won small{font-size:11px;color:var(--sub)}
+.view,.mk,.yr{display:none}.view.on,.mk.on,.yr.on{display:block}
+.demo{background:#f59e0b;color:#111;padding:8px 16px;text-align:center;font-weight:600}
+footer{color:var(--sub);font-size:12px;line-height:1.7;margin-top:26px}
+"""
+
+JS = """
+let dir={};function sortBy(id,i){const tb=document.querySelector('#'+id+' tbody');const rows=[...tb.rows];const k=id+i;dir[k]=!dir[k];
+rows.sort((a,b)=>{const x=a.cells[i],y=b.cells[i];const vx=x.dataset.v??x.textContent,vy=y.dataset.v??y.textContent;
+const nx=parseFloat(vx),ny=parseFloat(vy);const c=isNaN(nx)?String(vx).localeCompare(vy,'ko'):nx-ny;return dir[k]?-c:c;});
+rows.forEach(r=>tb.appendChild(r));}
+const st={v:'recent',m:'all',y:'5'};
+function set(k,val){st[k]=val;draw();}
+function draw(){
+ document.querySelectorAll('[data-set]').forEach(b=>{const [k,v]=b.dataset.set.split(':');b.classList.toggle('on',st[k]===v);});
+ document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.dataset.v===st.v));
+ document.querySelectorAll('.mk').forEach(e=>e.classList.toggle('on',e.dataset.m===st.m));
+ document.querySelectorAll('.yr').forEach(e=>e.classList.toggle('on',e.dataset.y===st.y));
+ document.getElementById('yrow').style.display=st.v==='long'?'flex':'none';
+ history.replaceState(null,'','#'+st.v+'-'+st.m+'-'+st.y);}
+(function(){const h=location.hash.slice(1).split('-');if(h[0]==='recent'||h[0]==='long')st.v=h[0];
+if(h[1]&&document.querySelector('[data-set="m:'+h[1]+'"]'))st.m=h[1];if(h[2])st.y=h[2];draw();})();
+"""
+
+
+def dashboard(df, long, today, demo):
+    banner = "<div class='demo'>⚠ 가짜(데모) 데이터로 만든 미리보기예요</div>" if demo else ""
+    markets = [("all", "전체", None)] + [(c.lower(), f"{f} {n}", c) for c, f, n in MARKETS
+                                          if (df.market == c).any()]
+
+    recent = "".join(
+        f"<div class='mk' data-m='{k}'>{recent_panel(df if c is None else df[df.market == c], k)}</div>"
+        for k, _, c in markets)
+    long_html = ""
+    for k, _, c in markets:
+        inner = "".join(
+            f"<div class='yr' data-y='{y}'>"
+            f"{long_panel([r for r in long[y] if c is None or r['market'] == c], y)}</div>"
+            for y in PERIODS)
+        long_html += f"<div class='mk' data-m='{k}'>{inner}</div>"
+
+    vbtn = ("<button data-set='v:recent' onclick=\"set('v','recent')\">📅 요즘 추천</button>"
+            "<button data-set='v:long' onclick=\"set('v','long')\">🌱 오래 꾸준히 오른</button>")
+    mbtn = "".join(f"<button data-set='m:{k}' onclick=\"set('m','{k}')\">{lb}</button>"
+                   for k, lb, _ in markets)
+    ybtn = "".join(f"<button data-set='y:{y}' onclick=\"set('y','{y}')\">{PERIOD_INFO[y][0]}</button>"
+                   for y in PERIODS)
+    counts = " · ".join(f"{f} {int((df.market == c).sum())}개" for c, f, _ in MARKETS
+                        if (df.market == c).any())
+
+    guide = """
+<div class="guide"><details><summary>👀 이 페이지 보는 법 (눌러서 열기)</summary>
+한국·미국에서 덩치가 큰 회사(시가총액 상위) 주식을 매일 살펴봐요. 점수는 <b>같은 나라 회사끼리</b> 비교해서 매겨요.<br>
+<b>📅 요즘 추천</b><br>
+&nbsp;&nbsp;🏆 오늘의 추천: 요즘 잘 오르고(45%) + 덜 흔들리고(25%) + 회사 성적이 좋은 것(30%)<br>
+&nbsp;&nbsp;🚀 쑥쑥: 요즘 많이 오른 것 &nbsp; 🎢 쉬는 중: 잘 오르다가 잠깐 내려온 것<br>
+&nbsp;&nbsp;🐢 꾸준: 덜 흔들리는 것 &nbsp; 💎 실속: 버는 돈에 비해 싸고 돈을 잘 버는 회사<br>
+<b>PER</b>: 주가가 회사의 1년 이익의 몇 배인지. 낮을수록 '싸다'고 봐요 (적자 회사는 '적자'로 표시)<br>
+<b>PBR</b>: 주가가 회사가 가진 재산의 몇 배인지. 낮을수록 싸요<br>
+<b>ROE</b>: 회사가 자기 돈으로 1년에 얼마나 벌었는지. 높을수록 장사를 잘해요<br>
+<b>이익 성장</b>: 작년 같은 때보다 이익이 얼마나 늘었는지<br>
+<b>📢 실적발표</b>: 회사가 성적표를 내는 날. 이 날 앞뒤로 주가가 크게 오르내릴 수 있어요<br>
+<b>🌱 오래 꾸준히 오른</b>: 1주~20년 동안 기간마다 올랐는지 색깔 칸으로 보여줘요.
+<span class="up">빨간색</span>은 오름, <span class="down">파란색</span>은 내림<br>
+<b>흔들림</b>: 주가가 하루하루 얼마나 크게 오르내리는지 (작음 · 보통 · 큼)<br>
+<b>최고점보다</b>: 지난 1년 중 가장 비쌌을 때보다 지금 얼마나 내려와 있는지<br>
+<b>🔥 너무 빨리 오름</b>: 짧은 시간에 많이 올라서, 잠깐 내려갈 수도 있으니 조심<br>
+⚠ 개별 종목은 ETF보다 훨씬 크게 오르내려요. 한 종목에 몰아서 사지 않는 게 좋아요.
+</details></div>"""
+
+    return f"""<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개별종목 추천 대시보드</title><style>{CSS}</style></head><body>{banner}
+<header><h1>📈 오늘의 개별종목 추천</h1><p>{today} 업데이트 · {counts} 종목을 살펴봤어요</p></header>
+{guide}
+<nav class="bar"><div class="row big">{vbtn}</div><div class="row">{mbtn}</div>
+<div class="row" id="yrow">{ybtn}</div></nav>
+<main>
+<div class="view" data-v="recent">{recent}</div>
+<div class="view" data-v="long">{long_html}</div>
+<footer>
+💡 가격은 배당금을 포함해서 계산했고, 수수료·세금은 빠져 있어요. 재무지표(PER·PBR·ROE·이익 성장)와 실적발표일은
+야후 파이낸스 자료라 가끔 비어 있거나 늦게 바뀔 수 있어요.<br>
+'100만 원이 → 얼마'는 그 기간 처음에 100만 원어치 샀다면 지금 얼마가 됐을지를 보여줘요.<br>
+⚠ 지난 자료로 계산한 참고 자료예요. 앞으로도 똑같이 오른다는 보장은 없고, 투자 권유가 아니에요.
+</footer></main>
+<script>{JS}</script></body></html>"""
+
+
+# ───────────────────────── 7. 실행 ─────────────────────────
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--demo", action="store_true", help="가짜 데이터로 테스트")
+    args = ap.parse_args()
+
+    universe = load_universe()
+    tickers = universe.ticker.tolist()
+    today_d = datetime.now(KST).date()
+    if args.demo:
+        closes, funds = demo_prices(tickers), demo_fundamentals(tickers, today_d)
+    else:
+        closes, funds = fetch_prices(tickers), fetch_fundamentals(tickers, today_d)
+
+    df = build_table(universe, closes, funds, today_d)
+    long = build_long(universe, closes)
+    today = today_d.strftime("%Y-%m-%d")
+
+    os.makedirs(DOCS, exist_ok=True)
+    with open(os.path.join(DOCS, "index.html"), "w", encoding="utf-8") as f:
+        f.write(dashboard(df, long, today, args.demo))
+    df.to_csv(os.path.join(DOCS, "latest.csv"), index=False, encoding="utf-8-sig")
+
+    msg = phone_message(df, long, today)
+    print(msg)
+
+    url = os.environ.get("DASHBOARD_URL")
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    if not url and repo:
+        owner, name = repo.split("/")
+        url = f"https://{owner}.github.io/{name}/"
+    if not args.demo:
+        send_ntfy("오늘의 개별종목 추천", msg, url)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
