@@ -83,14 +83,23 @@ def num(v):
 
 
 def _to_date(v):
+    """여러 모양의 날짜를 date로. 비어 있거나(NaT/NaN) 이상하면 None."""
+    try:
+        if v is None or pd.isna(v):
+            return None
+    except (TypeError, ValueError):
+        pass
     try:
         if isinstance(v, (int, float)):
-            return datetime.fromtimestamp(v, KST).date()
-        if isinstance(v, datetime):
-            return v.date()
-        if isinstance(v, date):
-            return v
-        return pd.Timestamp(v).date()
+            d = datetime.fromtimestamp(v, KST).date()
+        elif isinstance(v, datetime):
+            d = v.date()
+        elif isinstance(v, date):
+            d = v
+        else:
+            ts = pd.Timestamp(v)
+            d = None if pd.isna(ts) else ts.date()
+        return d if type(d) is date else None
     except Exception:
         return None
 
@@ -105,7 +114,7 @@ def next_earnings(tk, info, today):
             cands += [_to_date(d) for d in (ed if isinstance(ed, (list, tuple)) else [ed])]
     except Exception:
         pass
-    future = sorted(d for d in cands if d and d >= today)
+    future = sorted(d for d in cands if type(d) is date and d >= today)
     return future[0] if future else None
 
 
@@ -128,8 +137,15 @@ def fetch_fundamentals(tickers, today):
             "roe": num(info.get("returnOnEquity")),
             "growth": growth,
             "margin": num(info.get("profitMargins")),
-            "earn": next_earnings(tk, info, today),
+            "earn": _safe_earn(tk, info, today, t),
         }
+
+    def _safe_earn(tk, info, today, t):
+        try:
+            return next_earnings(tk, info, today)
+        except Exception as e:   # 한 종목 문제로 전체가 멈추지 않게
+            print(f"{t} 실적발표일 못 읽음: {e}")
+            return None
 
     with ThreadPoolExecutor(max_workers=6) as ex:
         out = dict(ex.map(one, tickers))
