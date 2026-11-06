@@ -4,10 +4,16 @@ on:
   schedule:
     # 한국시간 화~토 오전 7시 13분 (미국장 마감 직후, 한국장 전날 종가 반영)
     - cron: "13 22 * * 1-5"
+    # 한국시간 월~금 오후 4시 7분 — 한국장(오후 3시 30분) 마감 뒤 '오늘 많이 오른 종목' 알림
+    - cron: "7 7 * * 1-5"
   workflow_dispatch: {}   # Actions 화면에서 "Run workflow" 버튼으로 바로 실행
   push:                   # 종목 목록이나 코드를 고치면 바로 한 번 실행
     branches: [main]
     paths: ["stock_bot.py", "stocks.csv", "reasons.json"]
+
+concurrency:            # 여러 번 겹쳐 실행되면 차례로 (저장할 때 부딪히지 않게)
+  group: bot
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -29,6 +35,7 @@ jobs:
       - name: 종목 분석 + 휴대폰 알림
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          CLOSE_MARKET: ${{ github.event.schedule == '7 7 * * 1-5' && 'KR' || '' }}
         run: python stock_bot.py
 
       - name: 대시보드 저장
