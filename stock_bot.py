@@ -44,11 +44,34 @@ PERIOD_INFO = {   # 기간: (버튼 이름, 칸 하나의 단위, 세는 말, �
 MARKETS = [("KR", "🇰🇷", "한국"), ("US", "🇺🇸", "미국")]
 FLAG = {c: f for c, f, _ in MARKETS}
 
+# 테마 (주식뉴스알림과 같은 테마) — stocks.csv 의 theme 칸에 아래 key를 적어요. 여러 개면 | 로 이어요 (예: kr|bat)
+THEMES = [
+    ("kr", "🇰🇷 한국 대표", "한국에서 덩치가 큰 회사들이에요"),
+    ("us", "🇺🇸 미국 대표", "미국에서 덩치가 큰 회사들이에요 (S&P500 안의 큰 회사)"),
+    ("bio", "🧬 나스닥 바이오", "약이나 치료법을 새로 만드는 미국 회사들이에요"),
+    ("bat", "🔋 2차전지", "전기차·휴대폰에 들어가는, 다시 충전해 쓰는 배터리를 만드는 회사들이에요"),
+    ("ess", "⚡ 전고체·ESS", "더 안전한 차세대 배터리(전고체)와 전기를 모아두는 큰 배터리(ESS)를 만드는 회사들이에요"),
+    ("power", "🏭 AI 전력", "AI 데이터센터가 쓰는 엄청난 전기를 만들고 보내는 회사들이에요"),
+    ("robot", "🤖 로봇", "로봇과 공장 자동화 기계를 만드는 회사들이에요"),
+]
+THEME_NAME = {k: n for k, n, _ in THEMES}
+
+
+def in_theme(df, key):
+    """그 테마에 들어 있는 종목만"""
+    if key is None:
+        return df
+    return df[df.theme.fillna("").str.split("|").apply(lambda ts: key in ts)]
+
 
 # ───────────────────────── 1. 데이터 받아오기 ─────────────────────────
 
 def load_universe():
-    return pd.read_csv(os.path.join(HERE, "stocks.csv"), dtype=str)
+    u = pd.read_csv(os.path.join(HERE, "stocks.csv"), dtype=str)
+    if "theme" not in u:
+        u["theme"] = ""
+    u["theme"] = u.theme.fillna("").str.replace(" ", "")
+    return u
 
 
 def fetch_prices(tickers):
@@ -67,6 +90,22 @@ def fetch_prices(tickers):
                 closes[t] = s
         except Exception:
             pass
+    # 한국 종목은 코스피(.KS)·코스닥(.KQ)을 잘못 적었을 수 있어서 반대로 한 번 더 시도
+    swap = {t: t[:-3] + (".KQ" if t.endswith(".KS") else ".KS")
+            for t in tickers if t not in closes and t.endswith((".KS", ".KQ"))}
+    if swap:
+        raw2 = yf.download(list(swap.values()), period="max", auto_adjust=True,
+                           progress=False, group_by="ticker", threads=True)
+        for t, alt in swap.items():
+            try:
+                s = raw2[alt]["Close"] if isinstance(raw2.columns, pd.MultiIndex) else raw2["Close"]
+                s = s.dropna()
+                s = s[s > 0]
+                if len(s) > 0:
+                    closes[t] = s
+                    print(f"{t} → {alt} 로 찾았어요 (stocks.csv에서 고쳐주면 좋아요)")
+            except Exception:
+                pass
     missing = [t for t in tickers if t not in closes]
     if missing:
         print("가격을 못 받은 종목:", ", ".join(missing))
@@ -457,31 +496,36 @@ def won(total):
 
 def phone_message(df, long, today):
     out = [f"📅 {today} 기준"]
-    for code, flag, label in MARKETS:
-        sub = df[df.market == code]
+    for key, label, _ in THEMES:
+        sub = in_theme(df, key)
         if sub.empty:
             continue
         p = picks(sub)
-        out.append(f"\n{flag} {label}")
-        top = p["overall"].head(3)
+        out.append(f"\n{label}")
+        top = p["overall"].head(2)
         if top.empty:
             out.append("🏆 오늘의 추천: 없음")
         for i, (_, r) in enumerate(top.iterrows(), 1):
             tags = (" 🔥" if r.overheated else "") + (f" 📢성적표 {dday(r.earn_days)}" if earn_soon(r) else "")
-            out.append(f"🏆{i}등 {r['name']} ({r.total:.0f}점){tags}")
-        for icon, key, extra in [
-            ("🚀 쑥쑥 오르는 중", "momentum", lambda r: f"6달 동안 {pct(r.r6m)}"),
-            ("🎢 잠깐 쉬는 중", "rebound", lambda r: f"제일 비쌀 때보다 {pct(r.from_high)}"),
-            ("🐢 천천히 꾸준히", "stable", lambda r: f"흔들림 {shake(r.vol60)}"),
-            ("💎 싸고 튼튼한 회사", "value", lambda r: (f"{years_text(r.per)}이면 본전 · " if not pd.isna(r.per) else "")
-                                          + f"돈 버는 실력 {pct(r.roe)}"),
-        ]:
-            rows = p[key]
-            if rows.empty:
-                out.append(f"{icon}: 없음")
-            else:
-                r = rows.iloc[0]
-                out.append(f"{icon}: {r['name']} {extra(r)}{' 🔥' if r.overheated else ''}")
+            out.append(f"🏆{i}등 {FLAG.get(r.market, '')}{r['name']} ({r.total:.0f}점){tags}")
+        if not p["momentum"].empty:
+            r = p["momentum"].iloc[0]
+            out.append(f"🚀 쑥쑥: {FLAG.get(r.market, '')}{r['name']} 6달 동안 {pct(r.r6m)}{' 🔥' if r.overheated else ''}")
+
+    p = picks(df)
+    out.append("\n🌐 테마 상관없이 전체에서")
+    for icon, key, extra in [
+        ("🎢 잠깐 쉬는 중", "rebound", lambda r: f"제일 비쌀 때보다 {pct(r.from_high)}"),
+        ("🐢 천천히 꾸준히", "stable", lambda r: f"흔들림 {shake(r.vol60)}"),
+        ("💎 싸고 튼튼한 회사", "value", lambda r: (f"{years_text(r.per)}이면 본전 · " if not pd.isna(r.per) else "")
+                                      + f"돈 버는 실력 {pct(r.roe)}"),
+    ]:
+        rows = p[key]
+        if rows.empty:
+            out.append(f"{icon}: 없음")
+        else:
+            r = rows.iloc[0]
+            out.append(f"{icon}: {FLAG.get(r.market, '')}{r['name']} {extra(r)}{' 🔥' if r.overheated else ''}")
 
     soon = df[df.apply(lambda r: earn_soon(r, EARN_ALERT), axis=1)].sort_values("earn_days")
     if not soon.empty:
@@ -655,6 +699,8 @@ header{padding:22px 16px 6px;max-width:1100px;margin:auto}h1{font-size:23px;marg
 .guide summary{font-weight:700;cursor:pointer}
 .bar{position:sticky;top:0;z-index:5;background:var(--bg);max-width:1100px;margin:auto;padding:8px 16px 6px;display:flex;flex-direction:column;gap:6px}
 .row{display:flex;gap:5px}
+.row.scroll{overflow-x:auto;scrollbar-width:none}.row.scroll::-webkit-scrollbar{display:none}.row.scroll button{flex:none;padding:8px 12px}
+.tdesc{font-size:13px;color:var(--sub);margin:2px 2px 10px}
 .row button{flex:1 1 0;min-width:0;letter-spacing:-.2px;border:1px solid var(--line);background:transparent;color:var(--sub);border-radius:8px;padding:8px 4px;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap}
 .row.big button{font-size:15px;font-weight:600;padding:11px 4px;border-radius:10px}
 .row button.on{background:var(--soft);border-color:var(--soft);color:var(--fg)}
@@ -706,6 +752,7 @@ function draw(){
  document.querySelectorAll('.mk').forEach(e=>e.classList.toggle('on',e.dataset.m===st.m));
  document.querySelectorAll('.yr').forEach(e=>e.classList.toggle('on',e.dataset.y===st.y));
  document.getElementById('yrow').style.display=st.v==='long'?'flex':'none';
+ document.querySelectorAll('.row.scroll').forEach(r=>{const b=r.querySelector('button.on');if(b)r.scrollLeft=b.offsetLeft-r.offsetLeft-(r.clientWidth-b.offsetWidth)/2;});
  history.replaceState(null,'','#'+st.v+'-'+st.m+'-'+st.y);}
 (function(){const h=location.hash.slice(1).split('-');if(h[0]==='recent'||h[0]==='long')st.v=h[0];
 if(h[1]&&document.querySelector('[data-set="m:'+h[1]+'"]'))st.m=h[1];if(h[2])st.y=h[2];draw();})();
@@ -714,24 +761,25 @@ if(h[1]&&document.querySelector('[data-set="m:'+h[1]+'"]'))st.m=h[1];if(h[2])st.
 
 def dashboard(df, long, today, demo, build=""):
     banner = "<div class='demo'>⚠ 가짜(데모) 데이터로 만든 미리보기예요</div>" if demo else ""
-    markets = [("all", "전체", None)] + [(c.lower(), f"{f} {n}", c) for c, f, n in MARKETS
-                                          if (df.market == c).any()]
+    markets = [("all", "전체", None, "모든 테마의 회사를 한꺼번에 비교해요")] + [
+        (k, n, k, d) for k, n, d in THEMES if not in_theme(df, k).empty]
 
     recent = "".join(
-        f"<div class='mk' data-m='{k}'>{recent_panel(df if c is None else df[df.market == c], k)}</div>"
-        for k, _, c in markets)
+        f"<div class='mk' data-m='{k}'><p class='tdesc'>{E(d)} · {len(in_theme(df, c))}개</p>"
+        f"{recent_panel(in_theme(df, c), k)}</div>"
+        for k, _, c, d in markets)
     long_html = ""
-    for k, _, c in markets:
+    for k, _, c, _ in markets:
         inner = "".join(
             f"<div class='yr' data-y='{y}'>"
-            f"{long_panel([r for r in long[y] if c is None or r['market'] == c], y)}</div>"
+            f"{long_panel([r for r in long[y] if c is None or c in str(r.get('theme', '')).split('|')], y)}</div>"
             for y in PERIODS)
         long_html += f"<div class='mk' data-m='{k}'>{inner}</div>"
 
     vbtn = ("<button data-set='v:recent' onclick=\"set('v','recent')\">📅 요즘 추천</button>"
             "<button data-set='v:long' onclick=\"set('v','long')\">🌱 오래 꾸준히 오른</button>")
     mbtn = "".join(f"<button data-set='m:{k}' onclick=\"set('m','{k}')\">{lb}</button>"
-                   for k, lb, _ in markets)
+                   for k, lb, _, _ in markets)
     ybtn = "".join(f"<button data-set='y:{y}' onclick=\"set('y','{y}')\">{PERIOD_INFO[y][0]}</button>"
                    for y in PERIODS)
     counts = " · ".join(f"{f} {int((df.market == c).sum())}개" for c, f, _ in MARKETS
@@ -740,7 +788,8 @@ def dashboard(df, long, today, demo, build=""):
     guide = """
 <div class="guide"><details><summary>👀 이 페이지 보는 법 (눌러서 열기)</summary>
 <b>주식</b>은 회사를 아주 잘게 나눈 조각이에요. 조각을 사면 그 회사의 주인이 조금 되는 거예요.<br>
-회사가 장사를 잘하면 조각 가격이 오르고, 못하면 내려가요. 여기서는 한국·미국의 큰 회사 104개를 매일 살펴봐요.<br>
+회사가 장사를 잘하면 조각 가격이 오르고, 못하면 내려가요. 여기서는 한국·미국 회사 146개를 매일 살펴봐요.<br>
+회사들을 <b>테마</b>(2차전지, AI 전력, 로봇처럼 비슷한 일을 하는 회사 묶음)로 나눠 보여줘요. 위쪽 테마 버튼을 옆으로 밀면 더 있어요.<br>
 점수는 <b>같은 나라 회사끼리</b> 비교해서 매겨요. 100점에 가까울수록 좋아요.<br><br>
 <b>📅 요즘 추천</b><br>
 &nbsp;&nbsp;🏆 오늘의 추천: 잘 오르고 + 덜 출렁이고 + 돈도 잘 버는 회사<br>
@@ -769,9 +818,9 @@ def dashboard(df, long, today, demo, build=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark"><meta name="theme-color" content="#262624">
 <title>개별종목 추천 대시보드</title><style>{CSS}</style></head><body>{banner}
-<header><h1>📈 오늘의 개별종목 추천</h1><p>{today} 업데이트 · {counts} 회사를 살펴봤어요</p></header>
+<header><h1>📈 오늘의 개별종목 추천</h1><p>{today} 업데이트 · {counts} 회사를 테마별로 살펴봤어요</p></header>
 {guide}
-<nav class="bar"><div class="row big">{vbtn}</div><div class="row">{mbtn}</div>
+<nav class="bar"><div class="row big">{vbtn}</div><div class="row scroll">{mbtn}</div>
 <div class="row" id="yrow">{ybtn}</div></nav>
 <main>
 <div class="view" data-v="recent">{recent}</div>
