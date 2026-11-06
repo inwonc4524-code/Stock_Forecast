@@ -641,8 +641,8 @@ def long_panel(rows, years):
 
 
 CSS = """
-:root{--bg:#f6f7f9;--fg:#1c1f24;--sub:#6b7280;--card:#fff;--line:#e5e7eb;--up:#e03131;--down:#1c7ed6;--acc:#6d28d9;--soft:#f1edfb}
-@media (prefers-color-scheme:dark){:root{--bg:#111316;--fg:#e8eaed;--sub:#9aa0a6;--card:#1b1e22;--line:#2c3036;--up:#ff6b6b;--down:#4dabf7;--acc:#a78bfa;--soft:#231d36}}
+:root{--bg:#f6f7f9;--fg:#1c1f24;--sub:#6b7280;--card:#fff;--line:#e5e7eb;--up:#e03131;--down:#1c7ed6;--acc:#0f766e;--soft:#eef6f5}
+@media (prefers-color-scheme:dark){:root{--bg:#111316;--fg:#e8eaed;--sub:#9aa0a6;--card:#1b1e22;--line:#2c3036;--up:#ff6b6b;--down:#4dabf7;--acc:#2dd4bf;--soft:#16302d}}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--fg);-webkit-text-size-adjust:100%}
 header{padding:22px 16px 6px;max-width:1100px;margin:auto}h1{font-size:23px;margin:0 0 4px}header p{color:var(--sub);margin:0;font-size:13px}
 .guide{max-width:1100px;margin:10px auto 0;padding:0 16px}
@@ -663,7 +663,7 @@ ol{margin:0;padding-left:20px}li{padding:8px 0;border-top:1px solid var(--line);
 li:first-child{border-top:0}li div{display:flex;flex-direction:column}.tk{font-size:12px;color:var(--sub)}
 .m{white-space:nowrap;font-weight:700;font-size:14px;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
 i{font-style:normal;background:#f59e0b22;color:#d97706;padding:1px 6px;border-radius:6px;font-size:11px;font-weight:600}
-i.ev{background:#7c3aed22;color:#7c3aed}i.ls{background:#6b728022;color:var(--sub)}
+i.ev{background:var(--soft);color:var(--acc)}i.ls{background:#6b728022;color:var(--sub)}
 .up{color:var(--up)}.down{color:var(--down)}
 .empty{color:var(--sub)}.big{font-size:15px;line-height:1.7;text-align:center;padding:30px 0}
 h3{margin:26px 0 8px;font-size:16px}.hint{font-weight:400;font-size:12px;color:var(--sub)}
