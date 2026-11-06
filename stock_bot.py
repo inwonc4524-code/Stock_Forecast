@@ -424,8 +424,13 @@ def times(v):
     return "-" if pd.isna(v) or v <= 0 else f"{v:.1f}배" if v < 100 else f"{v:.0f}배"
 
 
+def years_text(v):
+    """PER을 '몇 년이면 본전'으로 (주가 ÷ 1년에 버는 돈)"""
+    return "-" if pd.isna(v) or v <= 0 else f"{v:.1f}년" if v < 100 else f"{v:.0f}년"
+
+
 def per_text(r):
-    return "적자" if r["loss"] else times(r["per"])
+    return "손해 중" if r["loss"] else years_text(r["per"])
 
 
 def dday(d):
@@ -460,16 +465,16 @@ def phone_message(df, long, today):
         out.append(f"\n{flag} {label}")
         top = p["overall"].head(3)
         if top.empty:
-            out.append("🏆 추천: 없음")
+            out.append("🏆 오늘의 추천: 없음")
         for i, (_, r) in enumerate(top.iterrows(), 1):
-            tags = (" 🔥" if r.overheated else "") + (f" 📢{dday(r.earn_days)}" if earn_soon(r) else "")
-            out.append(f"🏆{i} {r['name']} 점수 {r.total:.0f}{tags}")
+            tags = (" 🔥" if r.overheated else "") + (f" 📢성적표 {dday(r.earn_days)}" if earn_soon(r) else "")
+            out.append(f"🏆{i}등 {r['name']} ({r.total:.0f}점){tags}")
         for icon, key, extra in [
-            ("🚀 쑥쑥", "momentum", lambda r: f"6달 {pct(r.r6m)}"),
-            ("🎢 쉬는중", "rebound", lambda r: f"최고점보다 {pct(r.from_high)}"),
-            ("🐢 꾸준", "stable", lambda r: f"흔들림 {shake(r.vol60)}"),
-            ("💎 실속", "value", lambda r: (f"PER {times(r.per)} · " if not pd.isna(r.per) else "")
-                                          + f"ROE {pct(r.roe)}"),
+            ("🚀 쑥쑥 오르는 중", "momentum", lambda r: f"6달 동안 {pct(r.r6m)}"),
+            ("🎢 잠깐 쉬는 중", "rebound", lambda r: f"제일 비쌀 때보다 {pct(r.from_high)}"),
+            ("🐢 천천히 꾸준히", "stable", lambda r: f"흔들림 {shake(r.vol60)}"),
+            ("💎 싸고 튼튼한 회사", "value", lambda r: (f"{years_text(r.per)}이면 본전 · " if not pd.isna(r.per) else "")
+                                          + f"돈 버는 실력 {pct(r.roe)}"),
         ]:
             rows = p[key]
             if rows.empty:
@@ -483,15 +488,15 @@ def phone_message(df, long, today):
         names = ", ".join(f"{FLAG.get(r.market, '')}{r['name']} {dday(r.earn_days)}"
                           for _, r in soon.head(8).iterrows())
         more = f" 외 {len(soon) - 8}개" if len(soon) > 8 else ""
-        out.append(f"\n📢 일주일 안에 실적발표: {names}{more}")
+        out.append(f"\n📢 일주일 안에 성적표가 나와요: {names}{more}")
 
     best = long_rank(long.get(10, []))
     if best:
         b = best[0]
         out.append(f"\n🌱 10년 꾸준히 1등: {FLAG.get(b['market'], '')} {b['name']}"
                    f" — 10번 중 {b['ups']}번 오름, 100만 원 → {won(b['total'])}")
-    out.append("\n🔥 = 너무 빨리 올라서 조심 · 📢 = 곧 실적발표(주가가 크게 움직일 수 있음)")
-    out.append("※ 지난 자료로 계산한 참고용이에요. 투자 권유가 아니에요.")
+    out.append("\n🔥 = 너무 빨리 올라서 조심 · 📢 = 곧 회사 성적표가 나와요(이때 가격이 크게 움직일 수 있어요)")
+    out.append("※ 지나간 숫자로 계산한 참고용이에요. 꼭 오른다는 뜻도, 사라는 뜻도 아니에요.")
     return "\n".join(out)
 
 
@@ -520,9 +525,9 @@ def badges(r):
     if r.overheated:
         b += "<i>🔥 너무 빨리 오름</i>"
     if earn_soon(r):
-        b += f"<i class='ev'>📢 실적 {dday(r.earn_days)}</i>"
+        b += f"<i class='ev'>📢 성적표 {dday(r.earn_days)}</i>"
     if r["loss"]:
-        b += "<i class='ls'>적자</i>"
+        b += "<i class='ls'>손해 보는 중</i>"
     return b
 
 
@@ -534,7 +539,7 @@ def item_html(r, metric):
 
 def card(title, desc, rows, metric_fn):
     items = "".join(item_html(r, metric_fn(r)) for _, r in rows.iterrows()) \
-        or "<li class='empty'>오늘은 여기에 맞는 종목이 없어요</li>"
+        or "<li class='empty'>오늘은 여기에 맞는 회사가 없어요</li>"
     return f"<section class='card'><h2>{title}</h2><p>{desc}</p><ol>{items}</ol></section>"
 
 
@@ -548,23 +553,23 @@ def updown(v, text=None):
 def recent_panel(sub, mk):
     p = picks(sub)
     cards = (
-        card("🏆 오늘의 추천", "요즘 잘 오르고, 덜 출렁이고, 회사 성적도 괜찮은 종목이에요",
-             p["overall"], lambda r: f"점수 {r.total:.0f}") +
-        card("🚀 요즘 쑥쑥 오르는 중", "최근 1~6달 동안 주가가 많이 오른 종목이에요",
+        card("🏆 오늘의 추천", "요즘 잘 오르고, 덜 출렁이고, 돈도 잘 버는 회사예요. 100점에 가까울수록 좋아요",
+             p["overall"], lambda r: f"{r.total:.0f}점") +
+        card("🚀 요즘 쑥쑥 오르는 중", "최근 1~6달 동안 가격이 많이 오른 회사예요",
              p["momentum"], lambda r: f"6달 동안 {updown(r.r6m)}") +
-        card("🎢 잠깐 쉬는 중", "원래 잘 오르던 종목인데 요즘 내려왔어요(적자 회사는 뺐어요). 다시 오를 수도, 더 내려갈 수도 있어요",
-             p["rebound"], lambda r: f"최고점보다 {updown(r.from_high)}") +
-        card("🐢 천천히 꾸준히", "주가가 덜 흔들리고 6달 동안 조금이라도 오른 종목이에요",
+        card("🎢 잠깐 쉬는 중", "원래 잘 오르던 회사인데 요즘 가격이 내려왔어요. 다시 오를 수도, 더 내려갈 수도 있어요 (손해 보는 회사는 뺐어요)",
+             p["rebound"], lambda r: f"제일 비쌀 때보다 {updown(r.from_high)}") +
+        card("🐢 천천히 꾸준히", "가격이 덜 출렁이고, 6달 동안 조금이라도 오른 회사예요",
              p["stable"], lambda r: f"흔들림 {shake(r.vol60)}") +
-        card("💎 실속 있는 회사", "버는 돈에 비해 주가가 싸고(PER·PBR 낮음), 돈을 잘 버는(ROE·이익 성장 높음) 회사예요",
-             p["value"], lambda r: (f"<span>PER {times(r.per)} · ROE {updown(r.roe)}</span>"
-                                    if not pd.isna(r.per) else f"<span>ROE {updown(r.roe)}</span>"))
+        card("💎 싸고 튼튼한 회사", "버는 돈에 비해 가격이 싸고, 돈 버는 실력이 좋은 회사예요",
+             p["value"], lambda r: (f"<span>{years_text(r.per)}이면 본전 · 실력 {updown(r.roe)}</span>"
+                                    if not pd.isna(r.per) else f"<span>돈 버는 실력 {updown(r.roe)}</span>"))
     )
 
-    cols = [("name", "이름"), ("category", "업종"), ("r1m", "1달"), ("r3m", "3달"),
-            ("r6m", "6달"), ("r12m", "1년"), ("from_high", "최고점보다"), ("vol60", "흔들림"),
-            ("per", "PER"), ("pbr", "PBR"), ("roe", "ROE"), ("growth", "이익 성장"),
-            ("earn_days", "실적발표"), ("total", "점수")]
+    cols = [("name", "이름"), ("category", "하는 일"), ("r1m", "1달"), ("r3m", "3달"),
+            ("r6m", "6달"), ("r12m", "1년"), ("from_high", "제일 비쌀 때보다"), ("vol60", "흔들림"),
+            ("per", "본전까지"), ("pbr", "재산의 몇 배"), ("roe", "돈 버는 실력"), ("growth", "작년보다 번 돈"),
+            ("earn_days", "성적표 나오는 날"), ("total", "점수")]
 
     def cell(c, r):
         v = r[c]
@@ -602,8 +607,8 @@ def recent_panel(sub, mk):
     if not soon.empty:
         chips = "".join(f"<span class='chip'>{FLAG.get(r.market, '')} {E(r['name'])} <b>{dday(r.earn_days)}</b></span>"
                         for _, r in soon.iterrows())
-        soon_html = (f"<section class='card soon'><h2>📢 곧 실적발표</h2>"
-                     f"<p>{EARN_SOON}일 안에 회사 성적표가 나와요. 발표 전후로 주가가 크게 오르내릴 수 있어요</p>"
+        soon_html = (f"<section class='card soon'><h2>📢 곧 성적표가 나와요</h2>"
+                     f"<p>{EARN_SOON}일 안에 회사가 '얼마 벌었는지' 성적표를 내요. 이때는 가격이 크게 오르내릴 수 있어요</p>"
                      f"<div class='chips'>{chips}</div></section>")
 
     return (f"<div class='grid'>{cards}</div>{soon_html}"
@@ -616,7 +621,7 @@ def long_panel(rows, years):
     ranked = long_rank(rows)
     _, unit, cnt, pname = PERIOD_INFO[years]
     if not rows:
-        return (f"<p class='empty big'>여기엔 상장한 지 {pname}이 넘은 종목이 없어요.</p>")
+        return (f"<p class='empty big'>여기엔 생긴 지(주식시장에 나온 지) {pname}이 넘은 회사가 없어요.</p>")
     items = []
     for i, r in enumerate(ranked[:LONG_SHOW], 1):
         boxes = "".join(
@@ -634,10 +639,10 @@ def long_panel(rows, years):
             f"<div class='won'><small>100만 원이</small><b>{won(r['total'])}</b>"
             f"<small>{updown(r['total'])}</small></div></li>")
     lost = len(rows) - len(ranked)
-    note = f"이 기간 동안 손해 본 종목 {lost}개는 뺐어요. " if lost else ""
+    note = f"이 기간 동안 가격이 내려간 회사 {lost}개는 뺐어요. " if lost else ""
     return (f"<p class='how'>🟥 = 그 {unit}에 올랐어요 &nbsp; 🟦 = 그 {unit}에 내렸어요 "
-            f"(칸을 누르고 있으면 날짜가 보여요)<br>{note}상장한 지 {pname}이 안 된 종목은 계산에서 빠져요.</p>"
-            f"<ol class='longlist'>{''.join(items) or '<li class=empty>조건에 맞는 종목이 없어요</li>'}</ol>")
+            f"(칸을 누르고 있으면 날짜가 보여요)<br>{note}주식시장에 나온 지 {pname}이 안 된 회사는 계산에서 빠져요.</p>"
+            f"<ol class='longlist'>{''.join(items) or '<li class=empty>여기에 맞는 회사가 없어요</li>'}</ol>")
 
 
 CSS = """
@@ -734,22 +739,28 @@ def dashboard(df, long, today, demo, build=""):
 
     guide = """
 <div class="guide"><details><summary>👀 이 페이지 보는 법 (눌러서 열기)</summary>
-한국·미국에서 덩치가 큰 회사(시가총액 상위) 주식을 매일 살펴봐요. 점수는 <b>같은 나라 회사끼리</b> 비교해서 매겨요.<br>
+<b>주식</b>은 회사를 아주 잘게 나눈 조각이에요. 조각을 사면 그 회사의 주인이 조금 되는 거예요.<br>
+회사가 장사를 잘하면 조각 가격이 오르고, 못하면 내려가요. 여기서는 한국·미국의 큰 회사 104개를 매일 살펴봐요.<br>
+점수는 <b>같은 나라 회사끼리</b> 비교해서 매겨요. 100점에 가까울수록 좋아요.<br><br>
 <b>📅 요즘 추천</b><br>
-&nbsp;&nbsp;🏆 오늘의 추천: 요즘 잘 오르고(45%) + 덜 흔들리고(25%) + 회사 성적이 좋은 것(30%)<br>
-&nbsp;&nbsp;🚀 쑥쑥: 요즘 많이 오른 것 &nbsp; 🎢 쉬는 중: 잘 오르다가 잠깐 내려온 것<br>
-&nbsp;&nbsp;🐢 꾸준: 덜 흔들리는 것 &nbsp; 💎 실속: 버는 돈에 비해 싸고 돈을 잘 버는 회사<br>
-<b>PER</b>: 주가가 회사의 1년 이익의 몇 배인지. 낮을수록 '싸다'고 봐요 (적자 회사는 '적자'로 표시)<br>
-<b>PBR</b>: 주가가 회사가 가진 재산의 몇 배인지. 낮을수록 싸요<br>
-<b>ROE</b>: 회사가 자기 돈으로 1년에 얼마나 벌었는지. 높을수록 장사를 잘해요<br>
-<b>이익 성장</b>: 작년 같은 때보다 이익이 얼마나 늘었는지<br>
-<b>📢 실적발표</b>: 회사가 성적표를 내는 날. 이 날 앞뒤로 주가가 크게 오르내릴 수 있어요<br>
-<b>🌱 오래 꾸준히 오른</b>: 1주~20년 동안 기간마다 올랐는지 색깔 칸으로 보여줘요.
-<span class="up">빨간색</span>은 오름, <span class="down">파란색</span>은 내림<br>
-<b>흔들림</b>: 주가가 하루하루 얼마나 크게 오르내리는지 (작음 · 보통 · 큼)<br>
-<b>최고점보다</b>: 지난 1년 중 가장 비쌌을 때보다 지금 얼마나 내려와 있는지<br>
+&nbsp;&nbsp;🏆 오늘의 추천: 잘 오르고 + 덜 출렁이고 + 돈도 잘 버는 회사<br>
+&nbsp;&nbsp;🚀 쑥쑥 오르는 중: 요즘 가격이 많이 오른 회사<br>
+&nbsp;&nbsp;🎢 잠깐 쉬는 중: 잘 오르다가 요즘 잠깐 내려온 회사<br>
+&nbsp;&nbsp;🐢 천천히 꾸준히: 가격이 덜 출렁이는 회사<br>
+&nbsp;&nbsp;💎 싸고 튼튼한 회사: 버는 돈에 비해 싸고, 돈 버는 실력이 좋은 회사<br><br>
+<b>표에 나오는 말</b><br>
+&nbsp;&nbsp;<b>본전까지</b>: 회사가 1년에 버는 돈으로 지금 가격을 채우려면 몇 년 걸리는지. <b>짧을수록 싸요</b><br>
+&nbsp;&nbsp;<b>재산의 몇 배</b>: 회사가 가진 재산보다 가격이 몇 배 비싼지. <b>작을수록 싸요</b><br>
+&nbsp;&nbsp;<b>돈 버는 실력</b>: 회사가 가진 돈 100원으로 1년에 몇 원을 벌었는지. <b>클수록 장사를 잘해요</b><br>
+&nbsp;&nbsp;<b>작년보다 번 돈</b>: 작년 이맘때보다 번 돈이 얼마나 늘었는지(+) 줄었는지(−)<br>
+&nbsp;&nbsp;<b>성적표 나오는 날</b>: 회사가 '얼마 벌었는지' 발표하는 날. D-3은 3일 남았다는 뜻이에요<br>
+&nbsp;&nbsp;<b>흔들림</b>: 가격이 하루하루 얼마나 크게 오르내리는지 (작음 · 보통 · 큼)<br>
+&nbsp;&nbsp;<b>제일 비쌀 때보다</b>: 지난 1년 중 가장 비쌌던 날보다 지금 얼마나 싸졌는지<br>
+&nbsp;&nbsp;<span class="up">빨간 숫자</span>는 올랐다는 뜻, <span class="down">파란 숫자</span>는 내렸다는 뜻이에요<br><br>
+<b>🌱 오래 꾸준히 오른</b>: 1주~20년 동안 기간마다 올랐는지 색깔 칸으로 보여줘요.<br>
 <b>🔥 너무 빨리 오름</b>: 짧은 시간에 많이 올라서, 잠깐 내려갈 수도 있으니 조심<br>
-⚠ 개별 종목은 ETF보다 훨씬 크게 오르내려요. 한 종목에 몰아서 사지 않는 게 좋아요.
+<b>손해 보는 중</b>: 요즘 회사가 버는 돈보다 쓰는 돈이 더 많아요<br><br>
+⚠ 회사 하나는 여러 회사를 묶은 ETF보다 가격이 훨씬 크게 오르내려요. 한 회사에만 몰아서 사지 않는 게 좋아요.
 </details></div>"""
 
     return f"""<!DOCTYPE html>
@@ -758,7 +769,7 @@ def dashboard(df, long, today, demo, build=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark"><meta name="theme-color" content="#262624">
 <title>개별종목 추천 대시보드</title><style>{CSS}</style></head><body>{banner}
-<header><h1>📈 오늘의 개별종목 추천</h1><p>{today} 업데이트 · {counts} 종목을 살펴봤어요</p></header>
+<header><h1>📈 오늘의 개별종목 추천</h1><p>{today} 업데이트 · {counts} 회사를 살펴봤어요</p></header>
 {guide}
 <nav class="bar"><div class="row big">{vbtn}</div><div class="row">{mbtn}</div>
 <div class="row" id="yrow">{ybtn}</div></nav>
@@ -766,10 +777,10 @@ def dashboard(df, long, today, demo, build=""):
 <div class="view" data-v="recent">{recent}</div>
 <div class="view" data-v="long">{long_html}</div>
 <footer>
-💡 가격은 배당금을 포함해서 계산했고, 수수료·세금은 빠져 있어요. 재무지표(PER·PBR·ROE·이익 성장)와 실적발표일은
-야후 파이낸스 자료라 가끔 비어 있거나 늦게 바뀔 수 있어요.<br>
-'100만 원이 → 얼마'는 그 기간 처음에 100만 원어치 샀다면 지금 얼마가 됐을지를 보여줘요.<br>
-⚠ 지난 자료로 계산한 참고 자료예요. 앞으로도 똑같이 오른다는 보장은 없고, 투자 권유가 아니에요.
+💡 회사가 나눠주는 돈(배당금)도 더해서 계산했고, 살 때 내는 수수료와 세금은 빼지 않았어요.
+회사 성적(본전까지·재산의 몇 배·돈 버는 실력)과 성적표 나오는 날은 야후 파이낸스와 네이버 증권 자료라 가끔 비어 있을 수 있어요.<br>
+'100만 원이 → 얼마'는 그 기간 처음에 100만 원어치 샀다면 지금 얼마가 됐을지 보여줘요.<br>
+⚠ 지나간 숫자로 계산한 참고용이에요. 앞으로도 똑같이 오른다는 약속도, 사라는 뜻도 아니에요.
 </footer></main>
 <script>const BUILD="{build}";{JS}</script></body></html>"""
 
