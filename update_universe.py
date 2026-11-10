@@ -170,12 +170,19 @@ def intl_top():
     from concurrent.futures import ThreadPoolExecutor
     from intl_candidates import candidates
 
+    import time
+
     def one(item):
         t, hint = item
-        try:
-            info = yf.Ticker(t).info or {}
-        except Exception:
-            info = {}
+        info = {}
+        for k in range(3):   # 야후가 잠깐 막으면 쉬었다가 다시
+            try:
+                time.sleep(0.4)
+                info = yf.Ticker(t).info or {}
+                if info.get("marketCap"):
+                    break
+            except Exception:
+                time.sleep(5 * (k + 1))
         cap = float(info.get("marketCap") or 0)
         name = str(info.get("shortName") or info.get("longName") or t).strip()
         ind = str(info.get("industry") or "")
@@ -185,8 +192,9 @@ def intl_top():
 
     out = {}
     for mk, items in candidates().items():
-        with ThreadPoolExecutor(max_workers=4) as ex:
+        with ThreadPoolExecutor(max_workers=2) as ex:
             res = [r for r in ex.map(one, items) if r["cap"] > 0]
+        time.sleep(5)
         res.sort(key=lambda r: r["cap"], reverse=True)
         miss = [t for t, _ in items if t not in {r["ticker"] for r in res}]
         print(f"{mk}: 후보 {len(items)}개 중 시가총액 받은 곳 {len(res)}개" + (f" (못 받음: {' '.join(miss)})" if miss else ""))

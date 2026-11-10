@@ -32,6 +32,8 @@ DOCS = os.path.join(HERE, "docs")
 TOP_N = 10                   # 추천 카드마다 보여줄 개수
 LONG_SHOW = 50               # 순위 목록에 넣을 개수 (11위부터는 더보기)
 FIRST_SHOW = 10              # 처음에 보여줄 개수
+FUND_CACHE = os.path.join(DOCS, "funds.json")   # 회사 성적 저장 파일
+FUND_REFRESH = 150           # 한 번 실행할 때 새로 받을 회사 수 (야후가 막지 않게)
 MIN_DAYS = 220               # 이보다 데이터가 짧으면(상장 1년 미만 등) 제외
 EARN_SOON = 14               # 실적발표가 며칠 안으로 다가오면 📢 표시할지
 EARN_ALERT = 7               # 휴대폰 알림에 '곧 실적발표'로 넣을 기간(일)
@@ -143,43 +145,41 @@ def local_tz(ticker):
 
 
 def fetch_intraday(tickers):
-    """마지막 장날, 장 시작부터 마감까지 1시간마다 가격"""
+    """마지막 장날, 장 시작부터 마감까지 1시간마다 가격 (나눠 받고, 못 받은 곳은 한 번 더)"""
+    import time
     import yfinance as yf
-    try:
-        raw = yf.download(tickers, period="5d", interval="60m", auto_adjust=False,
-                          progress=False, group_by="ticker", threads=True, prepost=False)
-    except Exception as e:
-        print("시간별 가격을 못 받았어요:", e)
-        return
-    for t in tickers:
-        try:
-            d = raw[t] if isinstance(raw.columns, pd.MultiIndex) else raw
-            d = d.dropna(subset=["Open", "Close"])
-            d = d[d.Close > 0]
-            if d.empty:
-                continue
-            idx = d.index if d.index.tz is not None else d.index.tz_localize("UTC")
-            d = d.set_axis(idx.tz_convert(local_tz(t)))
-            # 야후가 1시간 가격 대신 하루치 가격 1개(자정 00:00)만 주는 경우가 있어서 걸러냄
-            d = d[[not (x.hour == 0 and x.minute == 0) for x in d.index]]
-            if d.empty:
-                continue
-            days = [x.date() for x in d.index]
-            last = days[-1]
-            day = d[[x == last for x in days]]
-            if len(day) < MIN_HOURS:      # 1시간 칸이 너무 적으면 믿지 않고 '하루 전체'로 보여줌
-                continue
-            INTRA[t] = {"date": pd.Timestamp(last), "open": float(day.Open.iloc[0]),
-                        "close": [float(x) for x in day.Close], "times": list(day.index)}
-        except Exception:
-            pass
-    for t, it in INTRA.items():
-        try:
-            fill_close(t, it)
-        except Exception:
-            pass
-    print(f"시간별 가격을 받은 곳: {len(INTRA)}/{len(tickers)}")
 
+    def grab(lst):
+        for i in range(0, len(lst), 100):
+            part = lst[i:i + 100]
+            try:
+                raw = yf.download(part, period="5d", interval="60m", auto_adjust=False,
+                                  progress=False, group_by="ticker", threads=True, prepost=False)
+            except Exception as e:
+                print("시간별 가격을 못 받았어요:", e)
+                continue
+            for t in part:
+                try:
+                    d = raw[t] if isinstance(raw.columns, pd.MultiIndex) else raw
+                    d = d.dropna(subset=["Open", "Close"])
+                    d = d[d.Close > 0]
+                    if d.empty:
+                        continue
+                    days = [x.date() for x in d.index]
+                    last = days[-1]
+                    day = d[[x == last for x in days]]
+                    INTRA[t] = {"date": pd.Timestamp(last), "open": float(day.Open.iloc[0]),
+                                "close": [float(x) for x in day.Close], "times": list(day.index)}
+                except Exception:
+                    pass
+            time.sleep(2)
+
+    grab(list(tickers))
+    miss = [t for t in tickers if t not in INTRA]
+    if miss:
+        time.sleep(5)
+        grab(miss)
+    print(f"시간별 가격을 받은 곳: {len(INTRA)}/{len(tickers)}")
 
 def demo_intraday(closes, seed=3):
     rng = np.random.default_rng(seed)
@@ -238,18 +238,22 @@ def fetch_prices(tickers):
     """야후 파이낸스에서 상장 이후 전체 기간의 가격(배당·액면분할 반영 수정종가)을 받아옵니다."""
     import yfinance as yf
 
-    raw = yf.download(tickers, period="max", auto_adjust=False,
-                      progress=False, group_by="ticker", threads=True)
+    import time
     closes = {}
-    for t in tickers:
-        try:
-            s = _pick(raw, t, t)
-            s = s.dropna()
-            s = s[s > 0]
-            if len(s) > 0:
-                closes[t] = s
-        except Exception:
-            pass
+    for i in range(0, len(tickers), 120):   # 한 번에 너무 많이 받으면 야후가 막아서 나눠 받기
+        part = tickers[i:i + 120]
+        raw = yf.download(part, period="max", auto_adjust=False,
+                          progress=False, group_by="ticker", threads=True)
+        for t in part:
+            try:
+                s = _pick(raw, t, t)
+                s = s.dropna()
+                s = s[s > 0]
+                if len(s) > 0:
+                    closes[t] = s
+            except Exception:
+                pass
+        time.sleep(2)
     # 잠깐 오류로 못 받은 종목은 하나씩 한 번 더 받아오기
     retry = [t for t in tickers if t not in closes]
     if retry:
@@ -402,20 +406,70 @@ def fetch_fundamentals(tickers, today):
             print(f"{t} 실적발표일 못 읽음: {e}")
             return None
 
-    with ThreadPoolExecutor(max_workers=4) as ex:
-        out = dict(ex.map(one, tickers))
-    # 야후가 잠깐 막아서 비어 있는 곳은 천천히 한 번 더
     import time
-    empty = [t for t, v in out.items() if all(pd.isna(v[k]) for k in ("per", "pbr", "roe", "growth"))]
+    keys = ("per", "pbr", "roe", "growth", "margin")
+    blank = lambda v: all(pd.isna(v.get(k, np.nan)) for k in ("per", "pbr", "roe", "growth"))
+
+    # 저장해 둔 값 불러오기 (회사 성적은 천천히 바뀌어서 며칠에 걸쳐 나눠 새로 받아요)
+    cache = {}
+    try:
+        with open(FUND_CACHE, encoding="utf-8") as f:
+            for t, v in json.load(f).items():
+                d = {k: num(v.get(k)) for k in keys}
+                d["earn"] = _to_date(v.get("earn")) if v.get("earn") else None
+                d["ts"] = v.get("ts", "")
+                cache[t] = d
+    except Exception:
+        pass
+
+    def need(t):   # 새로 받을 순서: 없는 것 → 비어 있는 것 → 실적발표일이 지난 것 → 오래된 것
+        v = cache.get(t)
+        if v is None:
+            return (0, "")
+        if blank(v):
+            return (1, v["ts"])
+        if v["earn"] is None or v["earn"] < today:
+            return (2, v["ts"])
+        return (3, v["ts"])
+    order = sorted(tickers, key=need)
+    todo = [t for t in order if need(t)[0] < 3][:FUND_REFRESH] or []
+    todo += [t for t in order if t not in todo][:max(0, FUND_REFRESH - len(todo))]
+
+    fresh = {}
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        for t, v in ex.map(one, todo):
+            fresh[t] = v
+    # 야후가 잠깐 막아서 비어 있는 곳은 천천히 한 번 더
+    empty = [t for t, v in fresh.items() if blank(v)]
     if empty:
         print(f"재무지표가 비어 있어 다시 받는 곳: {len(empty)}개")
         for t in empty:
-            time.sleep(0.6)
+            time.sleep(1.0)
             t2, v = one(t)
-            if not all(pd.isna(v[k]) for k in ("per", "pbr", "roe", "growth")):
-                out[t2] = v
+            if not blank(v):
+                fresh[t2] = v
+    stamp = today.isoformat()
+    for t, v in fresh.items():
+        if not blank(v) or t not in cache:
+            cache[t] = {**v, "ts": stamp}
+        elif v.get("earn"):
+            cache[t]["earn"] = v["earn"]
+    try:
+        os.makedirs(os.path.dirname(FUND_CACHE), exist_ok=True)
+        with open(FUND_CACHE, "w", encoding="utf-8") as f:
+            json.dump({t: {**{k: (None if pd.isna(v.get(k, np.nan)) else float(v[k])) for k in keys},
+                           "earn": v["earn"].isoformat() if v.get("earn") else None, "ts": v.get("ts", "")}
+                       for t, v in cache.items()}, f, ensure_ascii=False)
+    except Exception as e:
+        print("재무지표 저장 실패:", e)
+
+    out = {t: {k: cache.get(t, {}).get(k, np.nan) for k in keys} | {"earn": cache.get(t, {}).get("earn")}
+           for t in tickers}
+    for t, v in out.items():   # 지난 실적발표일은 보여주지 않음
+        if v["earn"] is not None and v["earn"] < today:
+            v["earn"] = None
     got = sum(1 for v in out.values() if not pd.isna(v["per"]) or not pd.isna(v["roe"]))
-    print(f"재무지표를 받은 종목: {got}/{len(tickers)}")
+    print(f"이번에 새로 받은 곳: {len(fresh)}개 · 재무지표가 있는 종목: {got}/{len(tickers)}")
     return out
 
 
