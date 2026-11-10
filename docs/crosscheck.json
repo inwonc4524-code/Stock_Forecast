@@ -1,6 +1,6 @@
 {
- "source_ok": 141,
- "source_none": 158,
+ "source_ok": 313,
+ "source_none": 0,
  "fixed_last": [
   "크래프톤 (216,500.00→205,500.00)"
  ],
@@ -9,9 +9,9 @@
  ],
  "no_source_markets": [
   "CA",
-  "CN",
+  "DE",
   "ID",
   "SG",
-  "VN"
+  "UK"
  ]
 }
