@@ -55,16 +55,16 @@ AAPL,애플,US,기술,
 MSFT,마이크로소프트,US,기술,
 NVDA,엔비디아,US,반도체,semi
 AVGO,브로드컴,US,반도체,semi
-AMD,AMD,US,반도체,semi
+AMD,AMD(어드밴스드 마이크로 디바이시스),US,반도체,semi
 QCOM,퀄컴,US,반도체,semi
-TXN,텍사스인스트루먼트,US,반도체,semi
-MU,마이크론,US,반도체,semi
-AMAT,어플라이드머티리얼즈,US,반도체장비,semi
-GOOGL,알파벳(구글),US,인터넷,net
+TXN,텍사스 인스트루먼트,US,반도체,semi
+MU,마이크론 테크놀로지,US,반도체,semi
+AMAT,어플라이드 머티어리얼즈,US,반도체장비,semi
+GOOGL,알파벳 Class A,US,인터넷,net
 META,메타,US,인터넷,net
-AMZN,아마존,US,인터넷·쇼핑,net
+AMZN,아마존닷컴,US,인터넷·쇼핑,net
 NFLX,넷플릭스,US,미디어,net
-DIS,디즈니,US,미디어,
+DIS,월트 디즈니,US,미디어,
 UBER,우버,US,인터넷,net
 TSLA,테슬라,US,자동차,bat|ess|robot
 ORCL,오라클,US,소프트웨어,
@@ -72,48 +72,48 @@ CRM,세일즈포스,US,소프트웨어,
 ADBE,어도비,US,소프트웨어,
 NOW,서비스나우,US,소프트웨어,
 INTU,인튜이트,US,소프트웨어,
-PLTR,팔란티어,US,소프트웨어,
+PLTR,팔란티어 테크놀로지스,US,소프트웨어,
 IBM,IBM,US,IT서비스,
-CSCO,시스코,US,네트워크,
-BRK-B,버크셔해서웨이,US,지주,fin
-JPM,JP모건,US,금융,fin
+CSCO,시스코 시스템즈,US,네트워크,
+BRK-B,버크셔 해서웨이 Class B,US,지주,fin
+JPM,제이피모간체이스,US,금융,fin
 BAC,뱅크오브아메리카,US,금융,fin
 WFC,웰스파고,US,금융,fin
 GS,골드만삭스,US,금융,fin
 V,비자,US,결제,fin
 MA,마스터카드,US,결제,fin
-LLY,일라이릴리,US,제약,bio
+LLY,일라이 릴리,US,제약,bio
 JNJ,존슨앤드존슨,US,제약,bio
 ABBV,애브비,US,제약,bio
-MRK,머크,US,제약,bio
-UNH,유나이티드헬스,US,헬스케어,bio
-TMO,써모피셔,US,헬스케어,bio
-ABT,애보트,US,헬스케어,bio
-ISRG,인튜이티브서지컬,US,의료기기,robot|bio
+MRK,머크 앤 코,US,제약,bio
+UNH,유나이티드헬스 그룹,US,헬스케어,bio
+TMO,써모 피셔 사이언티픽,US,헬스케어,bio
+ABT,애보트 래보라토리,US,헬스케어,bio
+ISRG,인튜이티브 서지컬,US,의료기기,robot|bio
 WMT,월마트,US,유통,
-COST,코스트코,US,유통,
+COST,코스트코 홀세일,US,유통,
 HD,홈디포,US,유통,
 MCD,맥도날드,US,외식,
 KO,코카콜라,US,음료,
 PEP,펩시코,US,음료,
-PG,P&G,US,생활용품,
-XOM,엑슨모빌,US,에너지,
+PG,P&G(프록터 & 갬블),US,생활용품,
+XOM,엑슨모빌 홀딩스,US,에너지,
 CVX,셰브론,US,에너지,
-LIN,린데,US,소재,
-GE,GE에어로스페이스,US,항공·방산,defense|power
+LIN,린드,US,소재,
+GE,GE 에어로스페이스,US,항공·방산,defense|power
 CAT,캐터필러,US,기계,power
 T,AT&T,US,통신,
 AMGN,암젠,US,바이오,bio
-GILD,길리어드,US,바이오,bio
-VRTX,버텍스,US,바이오,bio
-REGN,리제네론,US,바이오,bio
+GILD,길리어드 사이언시스,US,바이오,bio
+VRTX,버텍스 파마슈티컬,US,바이오,bio
+REGN,리제네론 파마슈티컬스,US,바이오,bio
 MRNA,모더나,US,바이오,bio
 BIIB,바이오젠,US,바이오,bio
-ALNY,앨나일람,US,바이오,bio
+ALNY,앨나일램 파마슈티컬스,US,바이오,bio
 INCY,인사이트,US,바이오,bio
-BMRN,바이오마린,US,바이오,bio
+BMRN,바이오마린 파마슈티컬,US,바이오,bio
 AZN,아스트라제네카,US,제약·바이오,bio
-ARGX,아르젠엑스,US,바이오,bio
+ARGX,아겐스 ADR,US,바이오,bio
 066970.KS,엘앤에프,KR,2차전지소재,bat
 020150.KS,롯데에너지머티리얼즈,KR,2차전지소재,bat
 011790.KS,SKC,KR,2차전지소재,bat
@@ -123,26 +123,26 @@ ALB,앨버말,US,리튬,bat
 457190.KS,이수스페셜티케미컬,KR,전고체 소재,ess
 281740.KQ,레이크머티리얼즈,KR,전고체 소재,ess
 336370.KS,솔루스첨단소재,KR,배터리 소재,ess
-FLNC,플루언스에너지,US,ESS,ess
+FLNC,플루언스 에너지,US,ESS,ess
 QS,퀀텀스케이프,US,전고체 배터리,ess
-SLDP,솔리드파워,US,전고체 배터리,ess
-ENPH,엔페이즈에너지,US,태양광·ESS,ess
+SLDP,솔리드 파워,US,전고체 배터리,ess
+ENPH,인페이즈 에너지,US,태양광·ESS,ess
 010120.KS,LS ELECTRIC,KR,전력기기,power
 298040.KS,효성중공업,KR,전력기기,power
 001440.KS,대한전선,KR,전선,power
 006260.KS,LS,KR,전선·지주,power
 103590.KS,일진전기,KR,전력기기,power
-VRT,버티브,US,데이터센터 전력,power
-GEV,GE버노바,US,발전·전력망,power
+VRT,버티브 홀딩스,US,데이터센터 전력,power
+GEV,GE 버노바,US,발전·전력망,power
 ETN,이튼,US,전력기기,power
-CEG,컨스텔레이션에너지,US,원전 발전,power
+CEG,콘스텔레이션 에너지,US,원전 발전,power
 VST,비스트라,US,발전,power
-PWR,콴타서비스,US,전력망 공사,power
+PWR,콴타 서비스,US,전력망 공사,power
 454910.KS,두산로보틱스,KR,로봇,robot
 108490.KQ,로보티즈,KR,로봇,robot
 090360.KQ,로보스타,KR,로봇,robot
 056080.KQ,유진로봇,KR,로봇,robot
-ROK,록웰오토메이션,US,공장 자동화,robot
+ROK,로크웰 오토메이션,US,공장 자동화,robot
 TER,테라다인,US,로봇·반도체장비,robot
 SYM,심보틱,US,물류 로봇,robot
 000100.KS,유한양행,KR,제약,bio
@@ -153,12 +153,12 @@ SYM,심보틱,US,물류 로봇,robot
 271560.KS,오리온,KR,과자,
 004020.KS,현대제철,KR,철강,
 047810.KS,한국항공우주,KR,항공·방산,defense
-079550.KS,LIG넥스원,KR,미사일·방산,defense
+079550.KS,LIG디펜스앤에어로스페이스,KR,미사일·방산,defense
 272210.KS,한화시스템,KR,방산 전자,defense
 000720.KS,현대건설,KR,건설·원전,power
 028050.KS,삼성E&A,KR,플랜트 건설,
 352820.KS,하이브,KR,연예기획,net
-036570.KS,엔씨소프트,KR,게임,net
+036570.KS,NC,KR,게임,net
 251270.KS,넷마블,KR,게임,net
 086280.KS,현대글로비스,KR,물류,
 161390.KS,한국타이어앤테크놀로지,KR,타이어,
@@ -189,67 +189,67 @@ SYM,심보틱,US,물류 로봇,robot
 122870.KQ,와이지엔터테인먼트,KR,연예기획(코스닥),net
 112040.KQ,위메이드,KR,게임(코스닥),net
 064760.KQ,티씨케이,KR,반도체 소재(코스닥),semi
-TSM,TSMC,US,반도체 위탁생산,semi
-ASML,ASML,US,반도체 장비,semi
+TSM,TSMC ADR,US,반도체 위탁생산,semi
+ASML,ASML 홀딩 ADR,US,반도체 장비,semi
 KLAC,KLA,US,반도체 장비,semi
-LRCX,램리서치,US,반도체 장비,semi
-ADI,아날로그디바이스,US,반도체,semi
-MRVL,마벨,US,반도체,semi
-ARM,ARM,US,반도체 설계,semi
+LRCX,램 리서치,US,반도체 장비,semi
+ADI,애널로그 디바이시스,US,반도체,semi
+MRVL,마벨 테크놀로지 그룹,US,반도체,semi
+ARM,암 홀딩스 ADR,US,반도체 설계,semi
 INTC,인텔,US,반도체,semi
 SNPS,시놉시스,US,반도체 설계 프로그램,semi
-CDNS,케이던스,US,반도체 설계 프로그램,semi
-PANW,팔로알토,US,사이버보안,net
-CRWD,크라우드스트라이크,US,사이버보안,net
+CDNS,케이던스 디자인 시스템즈,US,반도체 설계 프로그램,semi
+PANW,팔로 알토 네트웍스,US,사이버보안,net
+CRWD,크라우드 스트라이크 홀딩스,US,사이버보안,net
 FTNT,포티넷,US,사이버보안,net
 SHOP,쇼피파이,US,온라인 쇼핑몰 도구,net
-SPOT,스포티파이,US,음악,net
+SPOT,스포티파이 테크놀러지,US,음악,net
 ABNB,에어비앤비,US,숙박 공유,net
-BKNG,부킹홀딩스,US,여행 예약,net
-PYPL,페이팔,US,결제,fin
-COIN,코인베이스,US,코인 거래소,fin
-TMUS,T모바일,US,통신,
-VZ,버라이즌,US,통신,
+BKNG,부킹 홀딩스,US,여행 예약,net
+PYPL,페이팔 홀딩스,US,결제,fin
+COIN,코인베이스 글로벌,US,코인 거래소,fin
+TMUS,T-모바일 US,US,통신,
+VZ,버라이존,US,통신,
 NKE,나이키,US,신발·옷,
 SBUX,스타벅스,US,커피,
-LOW,로우스,US,집 수리 용품,
-TJX,TJX,US,할인 의류,
-ADP,ADP,US,급여 관리,
-AXP,아메리칸익스프레스,US,카드,fin
-MS,모건스탠리,US,투자은행,fin
-SCHW,찰스슈왑,US,증권,fin
+LOW,로우스 컴퍼니,US,집 수리 용품,
+TJX,TJX 컴퍼니스,US,할인 의류,
+ADP,오토매틱 데이터 프로세싱,US,급여 관리,
+AXP,아메리칸 익스프레스,US,카드,fin
+MS,모간스탠리,US,투자은행,fin
+SCHW,찰스 슈왑,US,증권,fin
 BLK,블랙록,US,자산운용,fin
 C,씨티그룹,US,은행,fin
-SPGI,S&P글로벌,US,신용평가,fin
+SPGI,S&P 글로벌,US,신용평가,fin
 PGR,프로그레시브,US,자동차보험,fin
 CB,처브,US,보험,fin
-AMT,아메리칸타워,US,통신탑 리츠,
+AMT,아메리칸 타워,US,통신탑 리츠,
 PLD,프로로지스,US,물류창고 리츠,
-EQIX,에퀴닉스,US,데이터센터 리츠,power
-NEE,넥스트에라에너지,US,전기·재생에너지,power|ess
-DUK,듀크에너지,US,전기,power
-SO,서던컴퍼니,US,전기,power
-UNP,유니언퍼시픽,US,철도,
-UPS,UPS,US,택배,
-HON,하니웰,US,산업 기계,robot
-LMT,록히드마틴,US,방산,defense
+EQIX,이퀴닉스,US,데이터센터 리츠,power
+NEE,넥스트에라 에너지,US,전기·재생에너지,power|ess
+DUK,듀크 에너지,US,전기,power
+SO,서던,US,전기,power
+UNP,유니온 퍼시픽,US,철도,
+UPS,UPS(유나이티드 파셀 서비스),US,택배,
+HON,허니웰 인터내셔널,US,산업 기계,robot
+LMT,록히드 마틴,US,방산,defense
 RTX,RTX,US,방산·항공,defense
-NOC,노스롭그루먼,US,방산,defense
-GD,제너럴다이내믹스,US,방산·군함,defense
+NOC,노스롭 그루만,US,방산,defense
+GD,제너럴 다이내믹스,US,방산·군함,defense
 DE,디어,US,농기계,robot
 BA,보잉,US,비행기,defense
 MDT,메드트로닉,US,의료기기,bio
 SYK,스트라이커,US,의료기기,bio|robot
-BSX,보스턴사이언티픽,US,의료기기,bio
+BSX,보스턴 사이언티픽,US,의료기기,bio
 DHR,다나허,US,의료 장비,bio
-BMY,BMS,US,제약,bio
+BMY,브리스톨-마이어스 스큅,US,제약,bio
 PFE,화이자,US,제약,bio
 ZTS,조에티스,US,동물약,bio
-PM,필립모리스,US,담배,
-MDLZ,몬델리즈,US,과자,
-CL,콜게이트,US,생활용품,
+PM,필립 모리스 인터내셔널,US,담배,
+MDLZ,몬덜리즈 인터내셔널,US,과자,
+CL,콜게이트-팜올리브,US,생활용품,
 COP,코노코필립스,US,석유,
-SLB,슐럼버거,US,석유 서비스,
+SLB,SLB,US,석유 서비스,
 402340.KS,SK스퀘어,KR,코스피 시총 3위,
 180640.KS,한진칼,KR,코스피 시총 49위,
 267250.KS,HD현대,KR,코스피 시총 57위,
@@ -277,252 +277,252 @@ SLB,슐럼버거,US,석유 서비스,
 000880.KS,한화,KR,코스피 시총 98위,
 377300.KS,카카오페이,KR,코스피 시총 99위,net
 047040.KS,대우건설,KR,코스피 시총 100위,
-GOOG,Alphabet Inc. (Class C),US,통신·미디어,net
-ANET,Arista Networks,US,기술,
-DELL,Dell Technologies,US,기술,
-APH,Amphenol,US,기술,
-WELL,Welltower,US,부동산,
-ACN,Accenture,US,기술,
-APP,AppLovin,US,통신·미디어,
-MO,Altria,US,필수소비(음식·생활),
-NEM,Newmont,US,소재,
-MCK,McKesson,US,헬스케어,bio
-COF,Capital One,US,금융,fin
-SNDK,Sandisk,US,기술,
-PH,Parker Hannifin,US,산업재,robot
-CME,CME Group,US,금융,fin
-MAR,Marriott International,US,소비(쇼핑·자동차),
-CVS,CVS Health,US,헬스케어,bio
-STX,Seagate Technology,US,기술,
-HCA,HCA Healthcare,US,헬스케어,bio
-MPC,Marathon Petroleum,US,에너지,
-BNY,BNY Mellon,US,금융,fin
-WDC,Western Digital,US,기술,
-MRSH,Marsh McLennan,US,금융,fin
-VLO,Valero Energy,US,에너지,
-PSX,Phillips 66,US,에너지,
-MMM,3M,US,산업재,
-BX,Blackstone Inc.,US,금융,fin
-ICE,Intercontinental Exchange,US,금융,fin
-WM,Waste Management,US,산업재,
-USB,U.S. Bancorp,US,금융,fin
-CSX,CSX Corporation,US,산업재,
-ELV,Elevance Health,US,헬스케어,bio
-GLW,Corning Inc.,US,기술,
-EMR,Emerson Electric,US,산업재,power
-MNST,Monster Beverage,US,필수소비(음식·생활),
-PNC,PNC Financial Services,US,금융,fin
-CTAS,Cintas,US,산업재,
-TT,Trane Technologies,US,산업재,
-MCO,Moody's Corporation,US,금융,fin
-KKR,KKR & Co.,US,금융,fin
-RCL,Royal Caribbean Group,US,소비(쇼핑·자동차),
-CMCSA,Comcast,US,통신·미디어,
-FCX,Freeport-McMoRan,US,소재,
-MSI,Motorola Solutions,US,기술,
-ECL,Ecolab,US,소재,
+GOOG,알파벳 Class C,US,통신·미디어,net
+ANET,아리스타 네트웍스,US,기술,
+DELL,델테크놀로지,US,기술,
+APH,암페놀,US,기술,
+WELL,웰타워,US,부동산,
+ACN,액센추어,US,기술,
+APP,앱러빈,US,통신·미디어,
+MO,알트리아그룹,US,필수소비(음식·생활),
+NEM,뉴몬트,US,소재,
+MCK,매케슨,US,헬스케어,bio
+COF,캐피털 원 파이낸셜,US,금융,fin
+SNDK,샌디스크,US,기술,
+PH,파커-하니핀,US,산업재,robot
+CME,CME 그룹,US,금융,fin
+MAR,메리어트 인터내셔널,US,소비(쇼핑·자동차),
+CVS,CVS 헬스,US,헬스케어,bio
+STX,씨게이트,US,기술,
+HCA,HCA 헬스케어,US,헬스케어,bio
+MPC,매러선 페트롤리엄,US,에너지,
+BNY,뉴욕멜론은행,US,금융,fin
+WDC,웨스턴 디지털,US,기술,
+MRSH,마쉬 앤 맥레넌 컴퍼니스,US,금융,fin
+VLO,발레로 에너지,US,에너지,
+PSX,필립스 66,US,에너지,
+MMM,쓰리엠 (3M),US,산업재,
+BX,블랙스톤,US,금융,fin
+ICE,인터컨티넨털 익스체인지,US,금융,fin
+WM,웨이스트 매니지먼트,US,산업재,
+USB,US 뱅코프,US,금융,fin
+CSX,CSX,US,산업재,
+ELV,엘레반스 헬스,US,헬스케어,bio
+GLW,코닝,US,기술,
+EMR,에머슨 일렉트릭,US,산업재,power
+MNST,몬스터 베버리지,US,필수소비(음식·생활),
+PNC,PNC 파이낸셜 서비스,US,금융,fin
+CTAS,신타스,US,산업재,
+TT,트레인 테크놀로지,US,산업재,
+MCO,무디스,US,금융,fin
+KKR,KKR & Co,US,금융,fin
+RCL,로얄 캐리비안 크루즈,US,소비(쇼핑·자동차),
+CMCSA,컴캐스트,US,통신·미디어,
+FCX,프리포트 맥모란,US,소재,
+MSI,모토로라 솔루션스,US,기술,
+ECL,이콜랩,US,소재,
 267270.KS,HD건설기계,KR,코스피 시총 100위,
-SHW,Sherwin-Williams,US,소재,
-0700.HK,TENCENT,HK,통신·미디어,net
-1398.HK,ICBC,HK,금융,fin
-0939.HK,CCB,HK,금융,fin
-0005.HK,HSBC HOLDINGS,HK,금융,fin
-9988.HK,BABA-W,HK,소비(쇼핑·자동차),net
-3988.HK,BANK OF CHINA,HK,금융,fin
-0857.HK,PETROCHINA,HK,에너지,
-0941.HK,CHINA MOBILE,HK,통신·미디어,
+SHW,셔윈-윌리엄즈,US,소재,
+0700.HK,텐센트,HK,통신·미디어,net
+1398.HK,ICBC(중국공상은행),HK,금융,fin
+0939.HK,CCB(중국건설은행),HK,금융,fin
+0005.HK,HSBC 홀딩스,HK,금융,fin
+9988.HK,알리바바 그룹 홀딩,HK,소비(쇼핑·자동차),net
+3988.HK,BOC(중국은행),HK,금융,fin
+0857.HK,페트로차이나,HK,에너지,
+0941.HK,차이나 모바일,HK,통신·미디어,
 3750.HK,CATL,HK,산업재,bat|ess
-3968.HK,CM BANK,HK,금융,fin
-0883.HK,CNOOC,HK,에너지,
-2318.HK,PING AN,HK,금융,fin
-1088.HK,CHINA SHENHUA,HK,에너지,
-1299.HK,AIA,HK,금융,fin
-1810.HK,XIAOMI-W,HK,기술,net
-2899.HK,ZIJIN MINING,HK,소재,
-2628.HK,CHINA LIFE,HK,금융,fin
-1211.HK,BYD COMPANY,HK,소비(쇼핑·자동차),bat|ess
-9999.HK,NTES,HK,통신·미디어,net
-0386.HK,SINOPEC CORP,HK,에너지,
-2388.HK,BOC HONG KONG,HK,금융,fin
-9633.HK,NONGFU SPRING,HK,필수소비(음식·생활),
-0388.HK,HKEX,HK,금융,fin
-3690.HK,MEITUAN-W,HK,소비(쇼핑·자동차),net
-0728.HK,CHINA TELECOM,HK,통신·미디어,
-0981.HK,SMIC,HK,기술,semi
-0267.HK,CITIC,HK,산업재,
-6160.HK,BEONE MEDICINES,HK,헬스케어,bio
-0016.HK,SHK PPT,HK,부동산,
-9618.HK,JD-SW,HK,소비(쇼핑·자동차),net
-0001.HK,CKH HOLDINGS,HK,산업재,
-1919.HK,COSCO SHIP HOLD,HK,산업재,
-0992.HK,LENOVO GROUP,HK,기술,
-1109.HK,CHINA RES LAND,HK,부동산,
-9961.HK,TRIP.COM-S,HK,소비(쇼핑·자동차),net
-2020.HK,ANTA SPORTS,HK,소비(쇼핑·자동차),
-9888.HK,BIDU-W,HK,통신·미디어,net
-0066.HK,MTR CORPORATION,HK,산업재,
-3692.HK,HANSOH PHARMA,HK,헬스케어,bio
-0002.HK,CLP HOLDINGS,HK,전기·가스,power
-2269.HK,WUXI BIO,HK,헬스케어,bio
-6690.HK,HAIER SMARTHOME,HK,소비(쇼핑·자동차),
-1113.HK,CK ASSET,HK,부동산,
-1347.HK,HUA HONG GRACE,HK,기술,semi
-0762.HK,CHINA UNICOM,HK,통신·미디어,
-0175.HK,GEELY AUTO,HK,소비(쇼핑·자동차),
-1801.HK,INNOVENT BIO,HK,헬스케어,bio
-0027.HK,GALAXY ENT,HK,소비(쇼핑·자동차),
-0688.HK,CHINA OVERSEAS,HK,부동산,
-0006.HK,POWER ASSETS,HK,전기·가스,power
-601939.SS,CHINA CONSTRUCTION BANK,CN,금융,fin
-601398.SS,INDUSTRIAL & COMMERCIAL BK OF C,CN,금융,fin
-601988.SS,BANK OF CHINA LTD,CN,금융,fin
-600941.SS,CHINA MOBILE LTD,CN,통신·미디어,
-601857.SS,PETROCHINA CO,CN,에너지,
-300750.SZ,CATL,CN,산업재,bat|ess
-600036.SS,CHINA MERCHANTS BANK CO LTD,CN,금융,fin
-601088.SS,CHINA SHENHUA ENERGY COMPANY LT,CN,에너지,
-601628.SS,CHINA LIFE INSURANCE CO LTD,CN,금융,fin
-688981.SS,SEMICONDUCTOR MANUFACTURING INT,CN,기술,semi
-601138.SS,FOXCONN INDUSTRIAL INTERNET CO,CN,기술,
-002594.SZ,BYD,CN,소비(쇼핑·자동차),bat|ess
-601899.SS,ZIJIN MINING GROUP CO.LTD,CN,소재,
-601328.SS,BANK OF COMMUNICATIONS CO LTD,CN,금융,fin
-600900.SS,CHINA YANGTZE POWER CO,CN,전기·가스,power
-600028.SS,CHINA PETROLEUM & CHEMICAL CORP,CN,에너지,
-000333.SZ,MIDEA GROUP,CN,소비(쇼핑·자동차),robot
-601728.SS,CHINA TELECOM CORPORATION,CN,통신·미디어,
-300308.SZ,ZHONGJI INNOLIGHT,CN,기술,semi
-688256.SS,CAMBRICON TECHNOLOGIES CORPORAT,CN,기술,semi
-688041.SS,HYGON INFORMATION TECHNOLOGY CO,CN,기술,semi
-601166.SS,INDUSTRIAL BANK CO LTD,CN,금융,fin
-002475.SZ,LXJM,CN,기술,
-600030.SS,CITIC SECURITIES CO LTD,CN,금융,fin
-002371.SZ,NAURA,CN,기술,semi
-600000.SS,SHANGHAI PUDONG DEVELOPMENT BAN,CN,금융,fin
-600276.SS,JIANGSU HENGRUI PHARMACEUTICALS,CN,헬스케어,bio
-002415.SZ,HIKVISION,CN,기술,
-601601.SS,CHINA PACIFIC INSURANCE (GROUP),CN,금융,fin
-300059.SZ,EASTMONEY,CN,금융,fin
-000858.SZ,WULIANGYE,CN,필수소비(음식·생활),
-600150.SS,CHINA CSSC HOLDINGS LIMITED,CN,산업재,defense
-300502.SZ,EOPTOLINK,CN,기술,semi
-003816.SZ,CGN POWER,CN,전기·가스,power
-688012.SS,ADVANCED MICRO-FABRICATION EQUI,CN,기술,semi
-600309.SS,WANHUA CHEMICAL GROUP CO LTD,CN,소재,
-000651.SZ,GREE,CN,소비(쇼핑·자동차),
-300760.SZ,MR,CN,헬스케어,bio
-603288.SS,FOSHAN HAITIAN FLAVOURING AND F,CN,필수소비(음식·생활),
-601985.SS,CHINA NATIONAL NUCLEAR POWER CO,CN,전기·가스,power
-600887.SS,INNER MONGOLIA YILI INDS. GP CO,CN,필수소비(음식·생활),
-601668.SS,CHINA CONSTRUCTION ENGINEERING,CN,산업재,
-600031.SS,SANY HEAVY INDUSTRY CO,CN,산업재,robot
-000725.SZ,BOE,CN,기술,
-300274.SZ,SUNGROW POWER SUPPLY,CN,산업재,ess|power
-600809.SS,SHANXI XINGHUACUN FENWINE FACTO,CN,필수소비(음식·생활),
-300124.SZ,INOVANCE,CN,산업재,robot
-002050.SZ,SANHUA,CN,산업재,robot
-000063.SZ,ZTE,CN,기술,
-600760.SS,AVIC SHENYANG AIRCRAFT CO LTD,CN,산업재,defense
-7203.T,TOYOTA MOTOR CORP,JP,소비(쇼핑·자동차),
-8306.T,MITSUBISHI UFJ FINANCIAL GROUP,JP,금융,fin
-9983.T,FAST RETAILING CO LTD,JP,소비(쇼핑·자동차),
-6098.T,RECRUIT HOLDINGS CO LTD,JP,통신·미디어,net
-6758.T,SONY GROUP CORPORATION,JP,기술,net
-8316.T,SUMITOMO MITSUI FINANCIAL GROUP,JP,금융,fin
-9984.T,SOFTBANK GROUP CORP,JP,통신·미디어,net
-6501.T,HITACHI,JP,산업재,power
-6857.T,ADVANTEST CORP,JP,기술,semi
-8035.T,TOKYO ELECTRON,JP,기술,semi
-8058.T,MITSUBISHI CORP,JP,산업재,
-8411.T,MIZUHO FINANCIAL GROUP,JP,금융,fin
-6861.T,KEYENCE CORP,JP,기술,robot
-8766.T,TOKIO MARINE HOLDINGS INC,JP,금융,fin
-8001.T,ITOCHU CORP,JP,산업재,
-285A.T,KIOXIA HOLDINGS CORPORATION,JP,기술,semi
-8031.T,MITSUI & CO,JP,산업재,
-9432.T,NTT INC,JP,통신·미디어,
-4519.T,CHUGAI PHARMACEUTICAL CO,JP,헬스케어,bio
-9434.T,SOFTBANK CORP.,JP,통신·미디어,
-7011.T,MITSUBISHI HEAVY INDUSTRIES,JP,산업재,defense|power
-4502.T,TAKEDA PHARMACEUTICAL CO LTD,JP,헬스케어,bio
-9433.T,KDDI CORPORATION,JP,통신·미디어,
-4063.T,SHIN-ETSU CHEMICAL CO,JP,소재,semi
-2914.T,JAPAN TOBACCO INC,JP,필수소비(음식·생활),
-7974.T,NINTENDO CO LTD,JP,통신·미디어,net
-6981.T,MURATA MANUFACTURING CO,JP,기술,
-8002.T,MARUBENI CORP,JP,산업재,
-8053.T,SUMITOMO CORP,JP,산업재,
-7741.T,HOYA CORP,JP,헬스케어,bio
-6752.T,PANASONIC HOLDINGS CORP,JP,기술,bat
-8725.T,MS&AD INS GP HLDGS,JP,금융,fin
-7267.T,HONDA MOTOR CO,JP,소비(쇼핑·자동차),
-6367.T,DAIKIN INDUSTRIES,JP,산업재,
-8630.T,SOMPO HOLDINGS INC,JP,금융,fin
-4661.T,ORIENTAL LAND CO,JP,소비(쇼핑·자동차),
-6702.T,FUJITSU,JP,기술,
-6701.T,NEC CORP,JP,기술,defense
-8591.T,ORIX CORPORATION,JP,금융,fin
-5108.T,BRIDGESTONE CORP,JP,소비(쇼핑·자동차),
-6954.T,FANUC CORPORATION,JP,산업재,robot
-4568.T,DAIICHI SANKYO COMPANY LIMITED,JP,헬스케어,bio
-6723.T,RENESAS ELECTRONICS CORP,JP,기술,semi
-3382.T,SEVEN & I HOLDINGS CO LTD,JP,필수소비(음식·생활),
-6146.T,DISCO CORPORATION,JP,기술,semi
-6902.T,DENSO CORP,JP,소비(쇼핑·자동차),
-4503.T,ASTELLAS PHARMA,JP,헬스케어,bio
-9020.T,EAST JAPAN RAILWAY CO,JP,산업재,
-6762.T,TDK CORP,JP,기술,
-9022.T,CENTRAL JAPAN RAILWAY CO,JP,산업재,
-VIC.VN,VINGROUP JSC,VN,부동산,
-VHM.VN,VINHOMES JOINT STOCK COMPANY,VN,부동산,
-VCB.VN,JS COMM BANK FOREIGN TRADE VIET,VN,금융,fin
-POW.VN,PETROVIETNAM POWER CORP,VN,전기·가스,power
-BID.VN,JSC BANK FOR INV & DEV OF VIETN,VN,금융,fin
-CTG.VN,VIETNAM JOINT STOCK COMMERCIAL,VN,금융,fin
-TCB.VN,VIETNAM TECHNOLOGICAL AND COMME,VN,금융,fin
-VPB.VN,VIETNAM PROSPERITY JSC BANK,VN,금융,fin
-MBB.VN,MILITARY COMMERCIAL JOINT STOCK,VN,금융,fin
-HPG.VN,HOA PHAT GROUP JSC,VN,소재,
-GAS.VN,PETROVIETNAM GAS JOINT STOCK CO,VN,에너지,
-HDB.VN,HO CHI MINH CITY DEV JS COMM BA,VN,금융,fin
-STB.VN,SAIGON TREASURE COML JT STK BK,VN,금융,fin
-VNM.VN,VIETNAM DAIRY PRODUCTS JSC,VN,필수소비(음식·생활),
-ACB.VN,ASIA COMMERCIAL BANK,VN,금융,fin
-GVR.VN,VIETNAM RUBBER GROUP - JSC,VN,소재,
-MWG.VN,MOBILE WORLD INVESTMENT CORPORA,VN,소비(쇼핑·자동차),
-LPB.VN,FORTUNE VIETNAME JSC BANK,VN,금융,fin
-MSN.VN,MASAN GROUP CORP,VN,산업재,
-VJC.VN,VIETJET AVIATION JSC,VN,산업재,
-FPT.VN,FPT CORPORATION,VN,기술,net
-HVN.VN,VIETNAM AIRLINES JSC,VN,산업재,
-SSI.VN,SSI SECURITIES CORPORATION,VN,금융,fin
-SAB.VN,SAIGON BEER ALCOHO,VN,필수소비(음식·생활),
-VRE.VN,VINCOM RETAIL JOINT STOCK COMPA,VN,부동산,
-VIB.VN,VIETNAM INTL COMMERCIAL BANK JS,VN,금융,fin
-SSB.VN,SOUTHEAST ASIA COMMERCIAL JS BA,VN,금융,fin
-SHB.VN,SAIGON-HANOI COMMERCIAL JT-STOC,VN,금융,fin
-BVH.VN,BAOVIET HOLDINGS,VN,금융,fin
-PLX.VN,VIETNAM NATIONAL PETROLEUM GRP,VN,에너지,
-TPB.VN,TIEN PHONG COMMERCIAL JST BANK,VN,금융,fin
-BCM.VN,BECAMEX INVESTMENT & INDUSTRIAL,VN,부동산,
-GMD.VN,GEMADEPT GROUP CORPORATION,VN,산업재,
-OCB.VN,ORIENT COMMERCIAL JOINT STOCK B,VN,금융,fin
-EIB.VN,VIETNAM EXPORT-IMPORT COMM JS B,VN,금융,fin
-REE.VN,REFRIGERATION ELEC ENGINEERING,VN,산업재,power
-NVL.VN,NO VA LAND INVESTMENT GRP CORP,VN,부동산,
-KBC.VN,KINHBAC CITY DEVELOPMENT SHA,VN,부동산,
-VCI.VN,VIETCAP SECURITIES JSC,VN,금융,fin
-VND.VN,VNDIRECT SECURITIES CORP,VN,금융,fin
-KDH.VN,KHANG DIEN HOUSE TRADING AND IN,VN,부동산,
-VGC.VN,VIGLACERA CORP,VN,산업재,
-DCM.VN,PETROVIETNAM CAMAU FERTILIZER C,VN,소재,
-PVD.VN,PETROVIETNAM DRILLING&WELL SERV,VN,에너지,
-DPM.VN,PETROVIETNAM FERT & CHEMICAL,VN,소재,
-DGC.VN,DUC GIANG CHEMICAL GROUP JSC,VN,소재,
-PDR.VN,PHAT DAT REAL ESTATE DEVELOPMEN,VN,부동산,
-NLG.VN,NAM LONG INVESTMENT CORPORATION,VN,부동산,
-BMP.VN,BINH MINH PLASTICS JOINT STO,VN,산업재,
-DIG.VN,DEVELOPMENT INVESTMENT CONS JSC,VN,부동산,
+3968.HK,초상은행,HK,금융,fin
+0883.HK,시누크,HK,에너지,
+2318.HK,핑안 인슈어런스 오브 차이나,HK,금융,fin
+1088.HK,중국신화에너지,HK,에너지,
+1299.HK,AIA 그룹,HK,금융,fin
+1810.HK,샤오미,HK,기술,net
+2899.HK,자금광업 Class H,HK,소재,
+2628.HK,중국생명,HK,금융,fin
+1211.HK,BYD,HK,소비(쇼핑·자동차),bat|ess
+9999.HK,넷이즈,HK,통신·미디어,net
+0386.HK,중국석유화학,HK,에너지,
+2388.HK,중국은행홍콩,HK,금융,fin
+9633.HK,농푸스프링,HK,필수소비(음식·생활),
+0388.HK,홍콩거래소,HK,금융,fin
+3690.HK,메이투안,HK,소비(쇼핑·자동차),net
+0728.HK,차이나 텔레콤,HK,통신·미디어,
+0981.HK,중국 국제 반도체,HK,기술,semi
+0267.HK,중신그룹,HK,산업재,
+6160.HK,비원 메디슨스,HK,헬스케어,bio
+0016.HK,신홍기부동산,HK,부동산,
+9618.HK,징동닷컴,HK,소비(쇼핑·자동차),net
+0001.HK,CKH홀딩스,HK,산업재,
+1919.HK,COSCO해운,HK,산업재,
+0992.HK,레노버,HK,기술,
+1109.HK,화룬부동산,HK,부동산,
+9961.HK,트립닷컴 그룹,HK,소비(쇼핑·자동차),net
+2020.HK,안타 스포츠,HK,소비(쇼핑·자동차),
+9888.HK,바이두,HK,통신·미디어,net
+0066.HK,홍콩철도,HK,산업재,
+3692.HK,한삼제약,HK,헬스케어,bio
+0002.HK,중전강고,HK,전기·가스,power
+2269.HK,야오밍바이오,HK,헬스케어,bio
+6690.HK,하이얼 스마트 홈,HK,소비(쇼핑·자동차),
+1113.HK,CK에셋홀딩스,HK,부동산,
+1347.HK,화훙 그레이스 반도체,HK,기술,semi
+0762.HK,차이나유니콤,HK,통신·미디어,
+0175.HK,길리자동차,HK,소비(쇼핑·자동차),
+1801.HK,이노벤트 바이오로직스,HK,헬스케어,bio
+0027.HK,은하오락집단,HK,소비(쇼핑·자동차),
+0688.HK,중국 해외발전,HK,부동산,
+0006.HK,전능실업,HK,전기·가스,power
+601939.SS,건설은행,CN,금융,fin
+601398.SS,ICBC(중국공상은행),CN,금융,fin
+601988.SS,중국은행,CN,금융,fin
+600941.SS,차이나 모바일,CN,통신·미디어,
+601857.SS,페트로차이나,CN,에너지,
+300750.SZ,닝더스다이,CN,산업재,bat|ess
+600036.SS,초상은행,CN,금융,fin
+601088.SS,신화에너지,CN,에너지,
+601628.SS,중국생명보험,CN,금융,fin
+688981.SS,중신 국제집성전로제조,CN,기술,semi
+601138.SS,부사강산업인터넷,CN,기술,
+002594.SZ,비야디,CN,소비(쇼핑·자동차),bat|ess
+601899.SS,자금광업 Class A,CN,소재,
+601328.SS,교통은행,CN,금융,fin
+600900.SS,장강전력,CN,전기·가스,power
+600028.SS,중국석유화학,CN,에너지,
+000333.SZ,메이디그룹,CN,소비(쇼핑·자동차),robot
+601728.SS,차이나 텔레콤,CN,통신·미디어,
+300308.SZ,중제욱창,CN,기술,semi
+688256.SS,한무기,CN,기술,semi
+688041.SS,해광신식,CN,기술,semi
+601166.SS,흥업은행,CN,금융,fin
+002475.SZ,입신정밀,CN,기술,
+600030.SS,중신증권,CN,금융,fin
+002371.SZ,북방화창,CN,기술,semi
+600000.SS,상해포동발전은행,CN,금융,fin
+600276.SS,항서의약,CN,헬스케어,bio
+002415.SZ,하이크비전,CN,기술,
+601601.SS,태평양보험,CN,금융,fin
+300059.SZ,동방재부정보,CN,금융,fin
+000858.SZ,오량액,CN,필수소비(음식·생활),
+600150.SS,중국선박공업,CN,산업재,defense
+300502.SZ,신역성통신기술,CN,기술,semi
+003816.SZ,CGN 파워,CN,전기·가스,power
+688012.SS,AMEC(중미반도체),CN,기술,semi
+600309.SS,만화화학,CN,소재,
+000651.SZ,격력전기,CN,소비(쇼핑·자동차),
+300760.SZ,매서의료,CN,헬스케어,bio
+603288.SS,해천미업,CN,필수소비(음식·생활),
+601985.SS,중국핵전,CN,전기·가스,power
+600887.SS,이리실업그룹,CN,필수소비(음식·생활),
+601668.SS,CSCEC(중국건축),CN,산업재,
+600031.SS,삼일중공업,CN,산업재,robot
+000725.SZ,경동방과기,CN,기술,
+300274.SZ,양광전력,CN,산업재,ess|power
+600809.SS,산서행화촌분주,CN,필수소비(음식·생활),
+300124.SZ,회천기술,CN,산업재,robot
+002050.SZ,삼화,CN,산업재,robot
+000063.SZ,중흥통신(ZTE),CN,기술,
+600760.SS,중항침비,CN,산업재,defense
+7203.T,토요타자동차,JP,소비(쇼핑·자동차),
+8306.T,미쓰비시 UFJ 파이낸셜 그룹,JP,금융,fin
+9983.T,패스트리테일링,JP,소비(쇼핑·자동차),
+6098.T,리쿠르트 홀딩스,JP,통신·미디어,net
+6758.T,소니 그룹,JP,기술,net
+8316.T,스미토모 미쓰이 파이낸셜그룹,JP,금융,fin
+9984.T,소프트뱅크 그룹,JP,통신·미디어,net
+6501.T,히타치,JP,산업재,power
+6857.T,어드반테스트,JP,기술,semi
+8035.T,도쿄일렉트론,JP,기술,semi
+8058.T,미쓰비시상사,JP,산업재,
+8411.T,미즈호 파이낸셜그룹,JP,금융,fin
+6861.T,키엔스,JP,기술,robot
+8766.T,도쿄마린홀딩스,JP,금융,fin
+8001.T,이토추상사,JP,산업재,
+285A.T,키옥시아 홀딩스,JP,기술,semi
+8031.T,미쓰이물산,JP,산업재,
+9432.T,NTT,JP,통신·미디어,
+4519.T,주가이제약,JP,헬스케어,bio
+9434.T,소프트뱅크,JP,통신·미디어,
+7011.T,미쓰비시중공업,JP,산업재,defense|power
+4502.T,다케다 제약,JP,헬스케어,bio
+9433.T,KDDI,JP,통신·미디어,
+4063.T,신에츠화학,JP,소재,semi
+2914.T,재팬토바코,JP,필수소비(음식·생활),
+7974.T,닌텐도,JP,통신·미디어,net
+6981.T,무라타제작소,JP,기술,
+8002.T,마루베니,JP,산업재,
+8053.T,스미토모상사,JP,산업재,
+7741.T,호야,JP,헬스케어,bio
+6752.T,파나소닉 홀딩스,JP,기술,bat
+8725.T,MS&AD 인슈어런스 그룹 홀딩스,JP,금융,fin
+7267.T,혼다자동차,JP,소비(쇼핑·자동차),
+6367.T,다이킨공업,JP,산업재,
+8630.T,솜포 홀딩스,JP,금융,fin
+4661.T,오리엔탈랜드,JP,소비(쇼핑·자동차),
+6702.T,후지쯔,JP,기술,
+6701.T,NEC,JP,기술,defense
+8591.T,오릭스,JP,금융,fin
+5108.T,브리지스톤,JP,소비(쇼핑·자동차),
+6954.T,화낙,JP,산업재,robot
+4568.T,다이이찌산쿄,JP,헬스케어,bio
+6723.T,르네사스 일렉트로닉스,JP,기술,semi
+3382.T,세븐 & 아이 홀딩스,JP,필수소비(음식·생활),
+6146.T,디스코,JP,기술,semi
+6902.T,덴소,JP,소비(쇼핑·자동차),
+4503.T,아스텔라스제약,JP,헬스케어,bio
+9020.T,동일본여객철도,JP,산업재,
+6762.T,TDK,JP,기술,
+9022.T,도카이여객철도,JP,산업재,
+VIC.VN,빈그룹,VN,부동산,
+VHM.VN,빈홈스,VN,부동산,
+VCB.VN,뱅크 포 포린 트레이드 오브 비엣남,VN,금융,fin
+POW.VN,페트로베트남 전력공사,VN,전기·가스,power
+BID.VN,베트남개발은행,VN,금융,fin
+CTG.VN,베트남산업은행,VN,금융,fin
+TCB.VN,베트남테콤은행,VN,금융,fin
+VPB.VN,번영은행,VN,금융,fin
+MBB.VN,밀리터리뱅크,VN,금융,fin
+HPG.VN,호아팟그룹,VN,소재,
+GAS.VN,PV가스,VN,에너지,
+HDB.VN,호치민개발은행,VN,금융,fin
+STB.VN,사이공 트레저 뱅크,VN,금융,fin
+VNM.VN,비나밀크,VN,필수소비(음식·생활),
+ACB.VN,아시아 커머셜,VN,금융,fin
+GVR.VN,베트남 고무 그룹 JSC,VN,소재,
+MWG.VN,모바일월드,VN,소비(쇼핑·자동차),
+LPB.VN,포츈 베트남 연합 은행,VN,금융,fin
+MSN.VN,마산그룹,VN,산업재,
+VJC.VN,비엣젯항공,VN,산업재,
+FPT.VN,FPT,VN,기술,net
+HVN.VN,베트남항공,VN,산업재,
+SSI.VN,사이공증권,VN,금융,fin
+SAB.VN,사이공 맥주,VN,필수소비(음식·생활),
+VRE.VN,빈꼼리테일,VN,부동산,
+VIB.VN,베트남 국제공동주식상업은행,VN,금융,fin
+SSB.VN,세아은행,VN,금융,fin
+SHB.VN,사이공 하노이 상업합동주식은행,VN,금융,fin
+BVH.VN,바오베트남,VN,금융,fin
+PLX.VN,페트롤리맥스,VN,에너지,
+TPB.VN,티엔퐁,VN,금융,fin
+BCM.VN,베카멕스 IDG,VN,부동산,
+GMD.VN,게마뎁트 그룹,VN,산업재,
+OCB.VN,베트남 동양 산업은행,VN,금융,fin
+EIB.VN,베트남수출입은행,VN,금융,fin
+REE.VN,냉동전기공학,VN,산업재,power
+NVL.VN,노바랜드 투자,VN,부동산,
+KBC.VN,킨박도시개발,VN,부동산,
+VCI.VN,베트남 증권,VN,금융,fin
+VND.VN,VNDIRECT증권,VN,금융,fin
+KDH.VN,캉디엔주택,VN,부동산,
+VGC.VN,비글라세라,VN,산업재,
+DCM.VN,PV까마우비료,VN,소재,
+PVD.VN,PV시추,VN,에너지,
+DPM.VN,PV비료화학,VN,소재,
+DGC.VN,둑지앙 케미컬스 그룹 JSC,VN,소재,
+PDR.VN,팟닷부동산개발,VN,부동산,
+NLG.VN,남롱투자,VN,부동산,
+BMP.VN,빈민플라스틱,VN,산업재,
+DIG.VN,DIC부동산,VN,부동산,
 BBCA.JK,Bank Central Asia Tbk,ID,금융,fin
 BBRI.JK,Bank Rakyat Indonesia (Persero),ID,금융,fin
 BMRI.JK,Bank Mandiri (Persero) Tbk,ID,금융,fin
@@ -669,10 +669,10 @@ BAB.L,BABCOCK INTERNATIONAL GROUP PLC,UK,산업재,defense
 WPP.L,WPP PLC ORD 10P,UK,통신·미디어,
 AUTO.L,AUTOTRADER GROUP PLC ORD 1P,UK,통신·미디어,net
 PSN.L,PERSIMMON PLC ORD 10P,UK,소비(쇼핑·자동차),
-601288.SS,AGRICULTURAL BANK OF CHINA,CN,금융,fin
-600519.SS,KWEICHOW MOUTAI,CN,필수소비(음식·생활),
-601318.SS,PING AN INSURANCE(GROUP)CO.OF C,CN,금융,fin
-601766.SS,CRRC CORPORATION LIMITED,CN,산업재,
+601288.SS,농업은행,CN,금융,fin
+600519.SS,귀주모태주,CN,필수소비(음식·생활),
+601318.SS,중국평안보험,CN,금융,fin
+601766.SS,CRRC(중국중차),CN,산업재,
 ALV.DE,Allianz SE                    v,DE,금융,fin
 FRE.DE,Fresenius SE & Co. KGaA       N,DE,헬스케어,bio
 CON.DE,CONTINENTAL AG                I,DE,소비(쇼핑·자동차),
