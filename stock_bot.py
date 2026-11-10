@@ -1320,7 +1320,8 @@ def dashboard(df, long, today, demo, build=""):
             "<button data-set='v:long' onclick=\"set('v','long')\">🌱 오래 꾸준히 오른</button>")
     mbtn = "".join(f"<button data-set='m:{k}' onclick=\"set('m','{k}')\">{lb}</button>"
                    for k, lb, kind, _, _ in tabs if kind != "t")
-    tbtn = "<span class='tl'>테마</span>" + "".join(
+    tbtn = ("<span class='tl'>테마</span>"
+            "<button data-set='t:' onclick=\"set('t','')\">전체</button>") + "".join(
         f"<button data-set='t:{k}' onclick=\"set('t','{k}')\">{lb}</button>"
         for k, lb, kind, _, _ in tabs if kind == "t")
     ybtn = "".join(f"<button data-set='y:{y}' onclick=\"set('y','{y}')\">{PERIOD_INFO[y][0]}</button>"
@@ -1332,7 +1333,7 @@ def dashboard(df, long, today, demo, build=""):
 <div class="guide"><details><summary>👀 이 페이지 보는 법 (눌러서 열기)</summary>
 <b>주식</b>은 회사를 아주 잘게 나눈 조각이에요. 조각을 사면 그 회사의 주인이 조금 되는 거예요.<br>
 회사가 장사를 잘하면 조각 가격이 오르고, 못하면 내려가요. 여기서는 미래에셋증권에서 살 수 있는 11개 나라(한국·미국·홍콩·중국·일본·베트남·인도네시아·독일·영국·싱가포르·캐나다)의 큰 회사 700여 개를 매일 살펴봐요.<br>
-기본은 <b>전체 · 한국 · 미국</b>으로 보고, 나라를 고른 채로 그 아래 <b>테마</b> 버튼(반도체·2차전지·AI 전력처럼 비슷한 일을 하는 회사 묶음)을 누르면 그 나라의 그 테마 순위만 볼 수 있어요. 테마를 한 번 더 누르면 해제돼서 그 나라 전체 순위가 보여요. 테마 버튼은 옆으로 밀면 더 있어요.<br>
+기본은 <b>전체 · 한국 · 미국</b>으로 보고, 나라를 고른 채로 그 아래 <b>테마</b> 버튼(반도체·2차전지·AI 전력처럼 비슷한 일을 하는 회사 묶음)을 누르면 그 나라의 그 테마 순위만 볼 수 있어요. 맨 왼쪽 <b>전체</b>를 누르거나 테마를 한 번 더 누르면 해제돼서 그 나라 전체 순위가 보여요. 테마 버튼은 옆으로 밀면 더 있어요.<br>
 점수는 <b>같은 나라 회사끼리</b> 비교해서 매겨요. 100점에 가까울수록 좋아요.<br><br>
 <b>📅 요즘 추천</b><br>
 &nbsp;&nbsp;🏆 오늘의 추천: 잘 오르고 + 덜 출렁이고 + 돈도 잘 버는 회사<br>
