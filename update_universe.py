@@ -4,6 +4,8 @@
 기준
   🇰🇷 한국: 코스피+코스닥 시가총액 상위 100개 (우선주·스팩 제외)  ← 네이버 증권
   🇺🇸 미국: S&P500 회사 중 시가총액 상위 150개                    ← 위키백과 + 야후 파이낸스
+  🌏 홍콩·중국·일본·베트남·인도네시아·독일·영국·싱가포르·캐나다:
+     intl_candidates.py 후보 중 시가총액 상위 50개씩                ← 야후 파이낸스
 지금 목록에 있는 회사(테마·업종으로 넣은 회사 포함)는 그대로 두고, 순위 안에 새로 들어온 회사만 더해요.
 순위에서 밀려난 회사도 지우지 않아요.
 
@@ -145,6 +147,53 @@ def us_top():
     return out
 
 
+INTL_TOP = 50
+INDUSTRY_THEME = [   # 야후 업종(industry) → 테마
+    ("Semiconductor", "semi"), ("Biotechnology", "bio"), ("Drug Manufacturers", "bio"),
+    ("Medical", "bio"), ("Diagnostics", "bio"), ("Banks", "fin"), ("Insurance", "fin"),
+    ("Capital Markets", "fin"), ("Financial", "fin"), ("Credit Services", "fin"),
+    ("Aerospace & Defense", "defense"), ("Utilities", "power"), ("Electrical Equipment", "power"),
+    ("Internet", "net"), ("Electronic Gaming", "net"), ("Entertainment", "net"),
+    ("Software", "net"), ("Specialty Industrial Machinery", "robot"),
+]
+SECTOR_KO = {
+    "Technology": "기술", "Healthcare": "헬스케어", "Financial Services": "금융",
+    "Consumer Cyclical": "소비(쇼핑·자동차)", "Consumer Defensive": "필수소비(음식·생활)",
+    "Communication Services": "통신·미디어", "Industrials": "산업재", "Energy": "에너지",
+    "Utilities": "전기·가스", "Real Estate": "부동산", "Basic Materials": "소재",
+}
+
+
+def intl_top():
+    """해외 9개 나라: 후보 중 시가총액 상위 50개씩"""
+    import yfinance as yf
+    from concurrent.futures import ThreadPoolExecutor
+    from intl_candidates import candidates
+
+    def one(item):
+        t, hint = item
+        try:
+            info = yf.Ticker(t).info or {}
+        except Exception:
+            info = {}
+        cap = float(info.get("marketCap") or 0)
+        name = str(info.get("shortName") or info.get("longName") or t).strip()
+        ind = str(info.get("industry") or "")
+        theme = hint or next((th for key, th in INDUSTRY_THEME if key in ind), "")
+        cat = SECTOR_KO.get(str(info.get("sector") or ""), str(info.get("sector") or "기타"))
+        return {"ticker": t, "name": name, "cap": cap, "theme": theme, "category": cat}
+
+    out = {}
+    for mk, items in candidates().items():
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            res = [r for r in ex.map(one, items) if r["cap"] > 0]
+        res.sort(key=lambda r: r["cap"], reverse=True)
+        miss = [t for t, _ in items if t not in {r["ticker"] for r in res}]
+        print(f"{mk}: 후보 {len(items)}개 중 시가총액 받은 곳 {len(res)}개" + (f" (못 받음: {' '.join(miss)})" if miss else ""))
+        out[mk] = res[:INTL_TOP]
+    return out
+
+
 def main():
     rows = load()
     have = {r["ticker"] for r in rows}
@@ -173,6 +222,18 @@ def main():
             added.append(f"🇺🇸 {x['name']}")
     except Exception as e:
         print("미국 순위 업데이트 실패:", e)
+
+    try:
+        for mk, lst in intl_top().items():
+            for x in lst:
+                if x["ticker"] in have:
+                    continue
+                rows.append({"ticker": x["ticker"], "name": x["name"], "market": mk,
+                             "category": x["category"], "theme": x["theme"]})
+                have.add(x["ticker"])
+                added.append(f"{mk} {x['name']}")
+    except Exception as e:
+        print("해외 순위 업데이트 실패:", e)
 
     save(rows)
     print(f"새로 넣은 회사 {len(added)}개 → 전체 {len(rows)}개")

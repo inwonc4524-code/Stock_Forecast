@@ -42,7 +42,9 @@ PERIOD_INFO = {   # 기간: (버튼 이름, 칸 하나의 단위, 세는 말, �
     10: ("10년", "해", "번", "10년"), 20: ("20년", "해", "번", "20년"),
 }
 
-MARKETS = [("KR", "🇰🇷", "한국"), ("US", "🇺🇸", "미국")]
+MARKETS = [("KR", "🇰🇷", "한국"), ("US", "🇺🇸", "미국"), ("HK", "🇭🇰", "홍콩"), ("CN", "🇨🇳", "중국"),
+           ("JP", "🇯🇵", "일본"), ("VN", "🇻🇳", "베트남"), ("ID", "🇮🇩", "인도네시아"), ("DE", "🇩🇪", "독일"),
+           ("UK", "🇬🇧", "영국"), ("SG", "🇸🇬", "싱가포르"), ("CA", "🇨🇦", "캐나다")]
 FLAG = {c: f for c, f, _ in MARKETS}
 
 # 테마 (주식뉴스알림과 같은 테마) — stocks.csv 의 theme 칸에 아래 key를 적어요. 여러 개면 | 로 이어요 (예: kr|bat)
@@ -69,8 +71,9 @@ def in_theme(df, key):
 
 # ───────────────────────── 1. 데이터 받아오기 ─────────────────────────
 
-CLOSE_KST = {"KR": "15:30", "US": "06:00", "CN": "16:00", "HK": "17:00"}   # 각 나라 장 마감 (한국시간)
-MKT_NAME = {"KR": "한국", "US": "미국", "CN": "중국", "HK": "홍콩"}
+CLOSE_KST = {"KR": "15:30", "US": "06:00", "CN": "16:00", "HK": "17:00", "JP": "15:30", "VN": "16:45",
+             "ID": "18:00", "DE": "01:30", "UK": "01:30", "SG": "18:00", "CA": "06:00"}   # 각 나라 장 마감 (한국시간, 겨울 기준)
+MKT_NAME = {c: n for c, _, n in MARKETS}
 
 
 def load_universe():
@@ -748,6 +751,20 @@ def money(v, market):
         return f"{v:,.2f}위안"
     if market == "HK":
         return f"HK${v:,.2f}"
+    if market == "JP":
+        return f"{v:,.0f}엔"
+    if market == "VN":
+        return f"{v:,.0f}동"
+    if market == "ID":
+        return f"{v:,.0f}루피아"
+    if market == "DE":
+        return f"€{v:,.2f}"
+    if market == "UK":   # 런던 주식 가격은 펜스(1/100 파운드)로 와요
+        return f"£{v / 100:,.2f}"
+    if market == "SG":
+        return f"S${v:,.2f}"
+    if market == "CA":
+        return f"C${v:,.2f}"
     return f"{v:,.2f}"
 
 
@@ -782,11 +799,18 @@ def won(total):
 
 def phone_message(df, long, today):
     out = [f"📅 {today} 기준"]
+    others = []
     for code, flag, label in MARKETS:
         sub = df[df.market == code]
         if sub.empty:
             continue
         p = picks(sub)
+        if code not in ("KR", "US"):   # 다른 나라는 1등만 한 줄로
+            top = p["overall"].head(1)
+            if not top.empty:
+                r = top.iloc[0]
+                others.append(f"{flag} {r['name']} ({r.total:.0f}점)")
+            continue
         out.append(f"\n{flag} {label}")
         top = p["overall"].head(3)
         if top.empty:
@@ -808,6 +832,8 @@ def phone_message(df, long, today):
                 r = rows.iloc[0]
                 out.append(f"{icon}: {r['name']} {extra(r)}{' 🔥' if r.overheated else ''}")
 
+    if others:
+        out.append("\n🌏 다른 나라 1등: " + " · ".join(others))
     soon = df[df.apply(lambda r: earn_soon(r, EARN_ALERT), axis=1)].sort_values("earn_days")
     if not soon.empty:
         names = ", ".join(f"{FLAG.get(r.market, '')}{r['name']} {dday(r.earn_days)}"
@@ -1182,7 +1208,7 @@ def dashboard(df, long, today, demo, build=""):
     guide = """
 <div class="guide"><details><summary>👀 이 페이지 보는 법 (눌러서 열기)</summary>
 <b>주식</b>은 회사를 아주 잘게 나눈 조각이에요. 조각을 사면 그 회사의 주인이 조금 되는 거예요.<br>
-회사가 장사를 잘하면 조각 가격이 오르고, 못하면 내려가요. 여기서는 한국·미국의 큰 회사와 인기 테마 회사 250여 개를 매일 살펴봐요.<br>
+회사가 장사를 잘하면 조각 가격이 오르고, 못하면 내려가요. 여기서는 미래에셋증권에서 살 수 있는 11개 나라(한국·미국·홍콩·중국·일본·베트남·인도네시아·독일·영국·싱가포르·캐나다)의 큰 회사 700여 개를 매일 살펴봐요.<br>
 기본은 <b>전체 · 한국 · 미국</b>으로 보고, 나라를 고른 채로 그 아래 <b>테마</b> 버튼(반도체·2차전지·AI 전력처럼 비슷한 일을 하는 회사 묶음)을 누르면 그 나라의 그 테마 순위만 볼 수 있어요. 테마를 한 번 더 누르면 해제돼서 그 나라 전체 순위가 보여요. 테마 버튼은 옆으로 밀면 더 있어요.<br>
 점수는 <b>같은 나라 회사끼리</b> 비교해서 매겨요. 100점에 가까울수록 좋아요.<br><br>
 <b>📅 요즘 추천</b><br>
@@ -1214,7 +1240,7 @@ def dashboard(df, long, today, demo, build=""):
 <title>개별종목 추천 대시보드</title><style>{CSS}</style></head><body>{banner}
 <header><h1>📈 오늘의 개별종목 추천</h1><p>{today} 업데이트 · {counts} 회사를 살펴봤어요</p></header>
 {guide}
-<nav class="bar"><div class="row big">{vbtn}</div><div class="row">{mbtn}</div><div class="row scroll">{tbtn}</div>
+<nav class="bar"><div class="row big">{vbtn}</div><div class="row scroll">{mbtn}</div><div class="row scroll">{tbtn}</div>
 <div class="row" id="yrow">{ybtn}</div></nav>
 <main>
 <div class="view" data-v="recent">{recent}</div>

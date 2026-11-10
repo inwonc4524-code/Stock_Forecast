@@ -7,7 +7,7 @@ on:
   workflow_dispatch: {}   # Actions 화면에서 "Run workflow" 버튼으로 바로 실행
   push:                   # 업데이트 규칙을 고치면 바로 한 번 실행
     branches: [main]
-    paths: ["update_universe.py", ".github/workflows/universe.yml"]
+    paths: ["update_universe.py", "intl_candidates.py", ".github/workflows/universe.yml"]
 
 concurrency:
   group: bot
