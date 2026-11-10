@@ -1,0 +1,17 @@
+{
+ "source_ok": 141,
+ "source_none": 158,
+ "fixed_last": [
+  "크래프톤 (216,500.00→205,500.00)"
+ ],
+ "excluded": [
+  "한진칼 (1일)"
+ ],
+ "no_source_markets": [
+  "CA",
+  "CN",
+  "ID",
+  "SG",
+  "VN"
+ ]
+}
