@@ -171,28 +171,44 @@ INTRA = {}   # 1일: 마지막 장날의 1시간 단위 가격 {"date", "open", 
 MIN_HOURS = 3   # 1일 화면: 1시간 칸이 이보다 적게 오면 '하루 전체' 한 칸으로 보여줌
 TZ_BY_SUFFIX = {".KS": "Asia/Seoul", ".KQ": "Asia/Seoul", ".SS": "Asia/Shanghai",
                 ".SZ": "Asia/Shanghai", ".HK": "Asia/Hong_Kong", ".T": "Asia/Tokyo",
-                ".TW": "Asia/Taipei", ".TWO": "Asia/Taipei", ".SI": "Asia/Singapore"}
+                ".TW": "Asia/Taipei", ".DE": "Europe/Berlin", ".L": "Europe/London",
+                ".TO": "America/Toronto", ".TWO": "Asia/Taipei", ".SI": "Asia/Singapore",
+                ".JK": "Asia/Jakarta", ".VN": "Asia/Ho_Chi_Minh"}
 
 
-CLOSE_LOCAL = {"Asia/Seoul": "15:30", "Asia/Shanghai": "15:00", "Asia/Hong_Kong": "16:00",
+CLOSE_LOCAL = {"Europe/Berlin": "17:30", "Europe/London": "16:30", "America/Toronto": "16:00",
+               "Asia/Seoul": "15:30", "Asia/Shanghai": "15:00", "Asia/Hong_Kong": "16:00",
                "Asia/Tokyo": "15:30", "Asia/Taipei": "13:30", "Asia/Singapore": "17:00",
+               "Asia/Jakarta": "15:50", "Asia/Ho_Chi_Minh": "14:45",
                "America/New_York": "16:00"}   # 정규장 마감 (그 나라 시간)
+
+
+def day_index(s):
+    """가격 표의 날짜를 시간대 없는 '날짜'로 (시간대가 붙어 있으면 비교할 때 오류가 나서)"""
+    idx = pd.DatetimeIndex(s.index)
+    if idx.tz is not None:
+        idx = idx.tz_localize(None)
+    return idx.normalize()
 
 
 def fill_close(t, it):
     """야후가 마지막 30분 등을 빼고 줄 때가 있어서, 그날 실제 마감 가격으로 마지막 칸을 채움"""
     real = RAW.get(t)
+    _end = it["times"][-1] + pd.Timedelta(hours=1)
+    _h, _m = map(int, CLOSE_LOCAL[local_tz(t)].split(":"))
+    _close = it["times"][-1].normalize() + pd.Timedelta(hours=_h, minutes=_m)
+    upto = f"{_end.hour}시" if _end <= _close else (f"{_h}시" if _m == 0 else f"{_h}시 {_m}분")
     if real is None or real.empty:
+        it["upto"] = upto
         return
-    day = it["date"].normalize()
-    same = real[real.index.normalize() == day]
+    day = pd.Timestamp(it["date"]).tz_localize(None).normalize() if pd.Timestamp(it["date"]).tz else pd.Timestamp(it["date"]).normalize()
+    same = real[day_index(real) == day]
     if same.empty:
+        it["upto"] = upto
         return
     final = float(same.iloc[-1])
     last = it["times"][-1]
-    hh, mm = CLOSE_LOCAL[local_tz(t)].split(":")
-    close_t = last.normalize() + pd.Timedelta(hours=int(hh), minutes=int(mm))
-    if last + pd.Timedelta(hours=1) < close_t:      # 마감 전에 빈 시간이 있음 → 칸 추가
+    if last + pd.Timedelta(hours=1) < _close:       # 마감 전에 빈 시간이 있음 → 칸 추가
         it["close"].append(final)
         it["times"].append(last + pd.Timedelta(hours=1))
         it["tail"] = True
@@ -206,6 +222,41 @@ def local_tz(ticker):
         if ticker.endswith(suf):
             return tz
     return "America/New_York"
+
+
+def align_slots():
+    """같은 나라·같은 날은 칸 수가 똑같도록 맞춤.
+    거래가 없던 1시간은 야후가 빼먹어서 칸이 6개, 4개처럼 모자라게 나옴
+    → 그 나라에서 가장 흔한 시간표에 맞춰 빈 시간은 '변화 없음'으로 채움."""
+    from collections import Counter
+    groups = {}
+    for t, it in INTRA.items():
+        key = (local_tz(t), MKT_OF.get(t, ""), str(pd.Timestamp(it["date"]).date()))
+        groups.setdefault(key, []).append(t)
+    for key, ts in groups.items():
+        hm = lambda it: tuple(f"{x:%H:%M}" for x in it["times"])
+        common = Counter(hm(INTRA[t]) for t in ts).most_common()
+        # 가장 많이 나온 시간표 중 칸이 가장 많은 것 (빠진 게 없는 시간표)
+        top_n = common[0][1]
+        slots = max((s for s, n in common if n >= max(2, top_n // 2)), key=len, default=common[0][0])
+        if len(set(slots)) < MIN_HOURS:
+            continue
+        for t in ts:
+            it = INTRA[t]
+            have = {f"{x:%H:%M}": (x, c) for x, c in zip(it["times"], it["close"])}
+            if tuple(have) == slots or not set(have) <= set(slots):
+                continue
+            base = it["times"][0].normalize()
+            times, closes, prev = [], [], it["open"]
+            for s in slots:
+                if s in have:
+                    x, prev = have[s]
+                else:
+                    h, m = map(int, s.split(":"))
+                    x = base + pd.Timedelta(hours=h, minutes=m)
+                times.append(x)
+                closes.append(prev)
+            it["times"], it["close"] = times, closes
 
 
 def fetch_intraday(tickers):
@@ -229,6 +280,13 @@ def fetch_intraday(tickers):
                     d = d[d.Close > 0]
                     if d.empty:
                         continue
+                    # 여러 나라를 한꺼번에 받으면 시간이 한 나라 시간으로 섞여서 → 그 종목 나라 시간으로 바꿈
+                    idx = d.index if d.index.tz is not None else d.index.tz_localize("UTC")
+                    d = d.set_axis(idx.tz_convert(local_tz(t)))
+                    # 야후가 1시간 가격 대신 하루치 가격 1개(자정 00:00)만 주는 경우가 있어서 걸러냄
+                    d = d[[not (x.hour == 0 and x.minute == 0) for x in d.index]]
+                    if d.empty:
+                        continue
                     days = [x.date() for x in d.index]
                     last = days[-1]
                     if open_today(MKT_OF.get(t, "")) == last:   # 아직 장 중이면 전날 장으로
@@ -237,6 +295,8 @@ def fetch_intraday(tickers):
                             continue
                         last = before[-1]
                     day = d[[x == last for x in days]]
+                    if len(day) < MIN_HOURS:      # 1시간 칸이 너무 적으면 믿지 않고 '하루 전체'로 보여줌
+                        continue
                     INTRA[t] = {"date": pd.Timestamp(last), "open": float(day.Open.iloc[0]),
                                 "close": [float(x) for x in day.Close], "times": list(day.index)}
                 except Exception:
@@ -248,7 +308,34 @@ def fetch_intraday(tickers):
     if miss:
         time.sleep(5)
         grab(miss)
+    align_slots()
+    bad = []
+    for t, it in INTRA.items():
+        try:
+            fill_close(t, it)
+            # 장 시작가가 이상하게 찍히는 경우(예: +18%) 거르기: 하루 등락(전날 마감→오늘 마감)과 비교
+            real = RAW.get(t)
+            day = pd.Timestamp(it["date"]).normalize()
+            if real is not None and len(real) >= 2 and day_index(real)[-1] == day:
+                daily = float(real.iloc[-1] / real.iloc[-2] - 1)
+                intra = it["close"][-1] / it["open"] - 1
+                gap = it["open"] / float(real.iloc[-2]) - 1
+                if abs(intra - daily) > 0.07 and abs(gap) > 0.25:
+                    bad.append(t)
+        except Exception as e:
+            INTRA_ERR.append(f"{t}: {type(e).__name__} {e}")
+    for t in bad:
+        INTRA.pop(t, None)
+    INTRA_BAD.extend(bad)
+    if bad:
+        print("시간별 가격이 이상해서 '하루 전체'로 바꾼 종목:", ", ".join(bad))
+    if INTRA_ERR:
+        print("시간별 가격 정리 중 오류:", INTRA_ERR[:5])
     print(f"시간별 가격을 받은 곳: {len(INTRA)}/{len(tickers)}")
+
+
+INTRA_BAD, INTRA_ERR = [], []
+
 
 def demo_intraday(closes, seed=3):
     rng = np.random.default_rng(seed)
