@@ -24,6 +24,8 @@ from datetime import date, datetime, timedelta, timezone
 
 import numpy as np
 import pandas as pd
+import re
+
 import requests
 
 import crosscheck
