@@ -1,5 +1,5 @@
 {
- "source_ok": 300,
+ "source_ok": 141,
  "source_none": 0,
  "fixed_last": [
   "한국전력 (30,650.00→29,750.00)",
@@ -19,11 +19,5 @@
   "위메이드 (1일)",
   "삼양식품 (1일)"
  ],
- "no_source_markets": [
-  "CA",
-  "DE",
-  "ID",
-  "SG",
-  "UK"
- ]
+ "no_source_markets": []
 }
