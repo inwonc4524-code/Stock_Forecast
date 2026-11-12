@@ -259,7 +259,7 @@ def align_slots():
             it["times"], it["close"] = times, closes
 
 
-def fetch_intraday(tickers):
+def fetch_intraday(tickers, wait=None):
     """마지막 장날, 장 시작부터 마감까지 1시간마다 가격 (나눠 받고, 못 받은 곳은 한 번 더)"""
     import time
     import yfinance as yf
@@ -308,6 +308,8 @@ def fetch_intraday(tickers):
     if miss:
         time.sleep(5)
         grab(miss)
+    if wait:      # 다른 사이트 비교(동시에 진행)가 끝나야 마감 가격을 믿고 쓸 수 있어서 기다림
+        wait()
     align_slots()
     bad = []
     for t, it in INTRA.items():
@@ -395,21 +397,19 @@ def fetch_prices(tickers):
     import yfinance as yf
 
     import time
+    import pricecache
     closes = {}
-    for i in range(0, len(tickers), 120):   # 한 번에 너무 많이 받으면 야후가 막아서 나눠 받기
-        part = tickers[i:i + 120]
-        raw = yf.download(part, period="max", auto_adjust=False,
-                          progress=False, group_by="ticker", threads=True)
-        for t in part:
-            try:
-                s = _pick(raw, t, t)
-                s = s.dropna()
-                s = s[s > 0]
-                if len(s) > 0:
-                    closes[t] = s
-            except Exception:
-                pass
-        time.sleep(2)
+    # 받아 둔 가격은 저장해 두고 최근 1달만 새로 받아 이어 붙임 (7일마다 한 번은 전체 새로)
+    raw = pricecache.download(tickers, batch=120, pause=2)
+    for t in tickers:
+        try:
+            s = _pick(raw, t, t)
+            s = s.dropna()
+            s = s[s > 0]
+            if len(s) > 0:
+                closes[t] = s
+        except Exception:
+            pass
     # 잠깐 오류로 못 받은 종목은 하나씩 한 번 더 받아오기
     retry = [t for t in tickers if t not in closes]
     if retry:
@@ -770,8 +770,8 @@ def long_term(s, years):
             wd = "월화수목금토일"[d.weekday()]
             labels.append(f"{d.month}월 {d.day}일 ({wd})")
             if d in s.index:
-                prev = s[s.index < d]
-                blocks.append(float(s[d] / prev.iloc[-1] - 1) if len(prev) else None)
+                i = s.index.get_loc(d)   # 바로 전 장날과 비교 (긴 가격표 전체를 매번 거르지 않게)
+                blocks.append(float(s.iloc[i] / s.iloc[i - 1] - 1) if i > 0 else None)
             else:
                 blocks.append(None)
         start = end - pd.Timedelta(days=7)
@@ -813,15 +813,16 @@ def long_term(s, years):
 
 def build_long(universe, closes):
     out = {}
+    clean = {t: s.dropna() for t, s in closes.items() if s is not None}   # 한 번만 정리해 두고 기간마다 다시 씀
     for y in PERIODS:
         rows = []
         for _, u in universe.iterrows():
-            s = closes.get(u.ticker)
+            s = clean.get(u.ticker)
             if s is None or s.empty:
                 continue
             if y in crosscheck.BAD.get(u.ticker, ()):   # 다른 사이트와 숫자가 달라 이번엔 뺌
                 continue
-            lt = intraday_term(u.ticker, s) if y == "1d" else long_term(s.dropna(), y)
+            lt = intraday_term(u.ticker, s) if y == "1d" else long_term(s, y)
             if lt:
                 real = RAW.get(u.ticker)
                 if y != "1d" and real is not None and len(real):
@@ -1483,11 +1484,25 @@ def dashboard(df, long, today, demo, build=""):
 
 # ───────────────────────── 7. 실행 ─────────────────────────
 
+_T0 = [None, None]
+
+
+def tick(label):
+    """어느 단계에서 시간이 얼마나 걸렸는지 실행 기록에 남김 (속도 점검용)"""
+    import time
+    now = time.time()
+    if _T0[0] is None:
+        _T0[0] = _T0[1] = now
+    print(f"⏱ {label}: {now - _T0[1]:.0f}초 (누적 {now - _T0[0]:.0f}초)", flush=True)
+    _T0[1] = now
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--demo", action="store_true", help="가짜 데이터로 테스트")
     args = ap.parse_args()
 
+    tick("시작")
     universe = load_universe()
     tickers = universe.ticker.tolist()
     MKT_OF.update(dict(zip(universe.ticker, universe.market)))
@@ -1495,11 +1510,20 @@ def main():
     if args.demo:
         closes, funds = demo_prices(tickers), demo_fundamentals(tickers, today_d)
     else:
-        closes, funds = fetch_prices(tickers), fetch_fundamentals(tickers, today_d)
+        from concurrent.futures import ThreadPoolExecutor
+        closes = fetch_prices(tickers)
+        tick("가격 받기")
         trim_all(closes)
-        cross_all(closes, universe)
+        # 빠르게: 네이버와 비교하는 일은 옆에서 동시에 하고, 그동안 야후에서 재무지표·시간별 가격을 받음
+        with ThreadPoolExecutor(max_workers=1) as ex:
+            cross = ex.submit(cross_all, closes, universe)
+            funds = fetch_fundamentals(tickers, today_d)
+            tick("재무지표")
+            fetch_intraday(tickers, wait=cross.result)
+            tick("다른 사이트 비교 + 시간별 가격")
 
-    (demo_intraday(closes) if args.demo else fetch_intraday(tickers))
+    if args.demo:
+        demo_intraday(closes)
     df = build_table(universe, closes, funds, today_d)
     df = apply_intraday(df)
     df = drop_bad_periods(df)
@@ -1513,6 +1537,7 @@ def main():
     with open(os.path.join(DOCS, "version.json"), "w", encoding="utf-8") as f:
         json.dump({"build": build}, f)
     df.to_csv(os.path.join(DOCS, "latest.csv"), index=False, encoding="utf-8-sig")
+    tick("계산 + 화면 만들기")
 
     close = os.environ.get("CLOSE_MARKET", "").upper()   # 장 마감 때 실행하면 KR/CN/HK
     msg = close_message(df, close, today) if close else phone_message(df, long, today)
