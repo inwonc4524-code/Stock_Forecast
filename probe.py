@@ -1,60 +1,49 @@
-"""임시 점검용: 이상해 보이는 숫자들의 원본 자료를 찍어 봅니다 (봇 실행과 무관)."""
-import json
-import requests
+"""임시 점검용: 고친 코드를 실제 자료에 돌려 봅니다 (봇 실행·알림과 무관)."""
 import pandas as pd
 import yfinance as yf
+import pricecache
+import probe_bot as stock_bot
 
-H = {"User-Agent": "Mozilla/5.0"}
+print("=== 1) 한국 종목 네이버 '작년보다 번 돈' ===")
+st = pd.read_csv("stocks.csv")
+kr = [t for t in st.ticker if t.endswith((".KS", ".KQ"))]
+res = {t: stock_bot.naver_growth(t) for t in kr}
+print(f"한국 {len(kr)}개 중 값 있음 {sum(1 for g, q in res.values() if not pd.isna(g))}개, "
+      f"분기 표시 있음 {sum(1 for g, q in res.values() if q)}개")
+print("분기 분포", pd.Series([q for g, q in res.values()]).value_counts().to_dict())
+for t in ["078930.KS", "005930.KS", "000660.KS", "036570.KS", "259960.KS", "035720.KS", "011070.KS"]:
+    print(" ", t, res.get(t))
+print("±300% 넘는 한국 종목", {t: (round(v[0], 2), v[1]) for t, v in res.items() if not pd.isna(v[0]) and abs(v[0]) > 3})
 
-print("=== 1) 네이버 분기 실적 구조 ===")
-for code in ["078930", "005930", "000660", "036570", "259960"]:
+print("=== 2) 가격 튐 바로잡기 — ETF(1.6배 기준) ===")
+etfs = open("probe_etfs.txt").read().split()
+raw = yf.download(etfs, period="max", auto_adjust=False, progress=False, group_by="ticker", threads=True)
+n = 0
+for t in etfs:
     try:
-        r = requests.get(f"https://m.stock.naver.com/api/stock/{code}/finance/quarter", headers=H, timeout=15)
-        j = r.json()
-        fi = j.get("financeInfo", j)
-        if code == "078930":
-            print(json.dumps(j, ensure_ascii=False)[:2500])
-        titles = fi.get("trTitleList", [])
-        print(code, [(t.get("key"), t.get("isConsensus")) for t in titles])
-        for row in fi.get("rowList", []):
-            if "순이익" in row.get("title", ""):
-                print("  ", row["title"], {k: v.get("value") for k, v in row.get("columns", {}).items()})
-    except Exception as e:
-        print(code, "실패", e)
-
-print("=== 2) 야후 이익 성장 ===")
-for t in ["078930.KS", "005930.KS", "000660.KS", "036570.KS", "JNJ", "PSX", "SNDK", "7203.T", "0700.HK"]:
-    try:
-        tk = yf.Ticker(t)
-        i = tk.info or {}
-        q = tk.quarterly_income_stmt
-        ni = q.loc["Net Income"] if q is not None and "Net Income" in q.index else None
-        print(t, i.get("earningsGrowth"), i.get("earningsQuarterlyGrowth"), i.get("mostRecentQuarter"),
-              None if ni is None else {str(k.date()): v for k, v in ni.head(6).items()})
-    except Exception as e:
-        print(t, "실패", e)
-
-print("=== 3) 가격 급변(분할 의심) ===")
-for t in ["1545.T", "2558.T", "1321.T", "1306.T", "512480.SS", "011070.KS", "001440.KS", "006800.KS",
-          "056080.KQ", "MRNA", "036930.KQ", "395270.KS", "069500.KS"]:
-    try:
-        h = yf.download(t, period="2y", auto_adjust=False, progress=False)
-        c = h["Close"].squeeze().dropna()
-        ch = c.pct_change()
-        big = ch[ch.abs() > 0.35]
-        print(t, "최고", c.idxmax().date(), round(float(c.max()), 2), "지금", round(float(c.iloc[-1]), 2),
-              "급변", {str(k.date()): round(float(v), 3) for k, v in big.items()})
-        a = yf.Ticker(t).splits
-        if a is not None and len(a):
-            print("   분할기록", {str(k.date()): float(v) for k, v in a.tail(3).items()})
+        c = raw[t]["Close"].dropna()
+        if len(c) < 3:
+            continue
+        f = pricecache.fix_jumps(c, 1.6, t)
+        if len(f) != len(c) or abs(f.iloc[0] / c.iloc[0] - 1) > 1e-9:
+            n += 1
+            print(f"   → {t}: 1년 최고 대비 {f.iloc[-1] / f.iloc[-260:].max() - 1:+.1%} "
+                  f"(고치기 전 {c.iloc[-1] / c.iloc[-260:].max() - 1:+.1%})")
     except Exception as e:
         print(t, "실패", e)
+print("ETF 고친 종목 수", n)
 
-print("=== 4) 네이버 일별 가격(한국) 최고가 ===")
-import crosscheck
-for code in ["011070", "001440", "006800", "069500"]:
+print("=== 3) 가격 튐 바로잡기 — 개별종목(3배 기준) ===")
+raw = yf.download(list(st.ticker), period="5y", auto_adjust=False, progress=False, group_by="ticker", threads=True)
+n = 0
+for t in st.ticker:
     try:
-        s2 = crosscheck.naver_series(code)
-        print(code, "최고", s2.idxmax().date(), s2.max(), "지금", s2.iloc[-1], len(s2))
-    except Exception as e:
-        print(code, "실패", e)
+        c = raw[t]["Close"].dropna()
+        if len(c) < 3:
+            continue
+        f = pricecache.fix_jumps(c, 3.0, t)
+        if len(f) != len(c) or abs(f.iloc[0] / c.iloc[0] - 1) > 1e-9:
+            n += 1
+    except Exception:
+        pass
+print("개별종목 고친 종목 수", n)
