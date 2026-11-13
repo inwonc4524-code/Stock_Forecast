@@ -1,7 +1,15 @@
 {
- "source_ok": 54,
+ "source_ok": 447,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [],
- "no_source_markets": []
+ "excluded": [
+  "펄어비스 (1일)"
+ ],
+ "no_source_markets": [
+  "CA",
+  "DE",
+  "ID",
+  "SG",
+  "UK"
+ ]
 }
