@@ -1,7 +1,19 @@
 {
- "source_ok": 50,
+ "source_ok": 424,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [],
- "no_source_markets": []
+ "excluded": [
+  "HPSP (1일)",
+  "펄어비스 (1일)",
+  "JYP Ent. (1일)",
+  "위메이드 (1일)",
+  "삼양식품 (1일)"
+ ],
+ "no_source_markets": [
+  "CA",
+  "DE",
+  "ID",
+  "SG",
+  "UK"
+ ]
 }
