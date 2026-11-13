@@ -1,22 +1,7 @@
 {
- "source_ok": 475,
+ "source_ok": 50,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [
-  "펄어비스 (1일)",
-  "브리지스톤 (1년)",
-  "빈그룹 (1년)",
-  "빈홈스 (1년)",
-  "베트남산업은행 (1년)",
-  "베트남테콤은행 (1달,1년)",
-  "호치민개발은행 (1년)",
-  "게마뎁트 그룹 (1년)"
- ],
- "no_source_markets": [
-  "CA",
-  "DE",
-  "ID",
-  "SG",
-  "UK"
- ]
+ "excluded": [],
+ "no_source_markets": []
 }
