@@ -108,6 +108,14 @@ def kr_top():
     return out[:KR_TOP]
 
 
+
+def clean_name(n):
+    """야후 이름의 군더더기 빼기: 'SAP SE      I' → 'SAP SE', 'TESCO PLC ORD 6 1/3P' → 'TESCO PLC'"""
+    n = re.sub(r"\s{2,}.*$", "", n)
+    n = re.sub(r"\s+ORD\b.*$", "", n)
+    n = re.sub(r"\s+\($", "", n)
+    return n.strip()
+
 def kr_theme(name):
     for words, t in KR_THEME_WORDS:
         if any(w in name for w in words):
@@ -184,7 +192,7 @@ def intl_top():
             except Exception:
                 time.sleep(5 * (k + 1))
         cap = float(info.get("marketCap") or 0)
-        name = str(info.get("shortName") or info.get("longName") or t).strip()
+        name = clean_name(str(info.get("shortName") or info.get("longName") or t))
         ind = str(info.get("industry") or "")
         theme = hint or next((th for key, th in INDUSTRY_THEME if key in ind), "")
         cat = SECTOR_KO.get(str(info.get("sector") or ""), str(info.get("sector") or "기타"))

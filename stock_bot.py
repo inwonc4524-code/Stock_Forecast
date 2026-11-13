@@ -289,6 +289,9 @@ def fetch_intraday(tickers, wait=None):
                     d = d.set_axis(idx.tz_convert(local_tz(t)))
                     # 야후가 1시간 가격 대신 하루치 가격 1개(자정 00:00)만 주는 경우가 있어서 걸러냄
                     d = d[[not (x.hour == 0 and x.minute == 0) for x in d.index]]
+                    # 정규장 마감 뒤에 시작하는 칸은 빼요 (예: 인도네시아는 15:50 마감인데 16:00 칸이 따로 와서 칸이 하나 더 생겼음)
+                    _ch, _cm = map(int, CLOSE_LOCAL[local_tz(t)].split(":"))
+                    d = d[[(x.hour, x.minute) < (_ch, _cm) for x in d.index]]
                     if d.empty:
                         continue
                     days = [x.date() for x in d.index]

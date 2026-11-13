@@ -62,7 +62,7 @@ SAP.DE:net SIE.DE:robot|power ALV.DE:fin DTE.DE MBG.DE BMW.DE VOW3.DE BAS.DE BAY
 DBK.DE:fin IFX.DE:semi ADS.DE DHL.DE RWE.DE:power EOAN.DE:power ENR.DE:power RHM.DE:defense
 HNR1.DE:fin BEI.DE HEN3.DE MRK.DE:bio|semi FRE.DE:bio FME.DE:bio SHL.DE:bio DB1.DE:fin CBK.DE:fin
 AIR.DE:defense MTX.DE:defense HEI.DE P911.DE PAH3.DE CON.DE SY1.DE VNA.DE ZAL.DE:net QIA.DE:bio
-SRT3.DE:bio BNR.DE 1COV.DE DTG.DE HAG.DE:defense TKA.DE:defense RENK.DE:defense KGX.DE:robot
+SRT3.DE:bio BNR.DE DTG.DE HAG.DE:defense TKA.DE:defense RENK.DE:defense KGX.DE:robot
 JEN.DE:semi AIXA.DE:semi G1A.DE EVK.DE PUM.DE HLAG.DE TLX.DE:fin
 """,
     # 🇬🇧 영국 (.L)

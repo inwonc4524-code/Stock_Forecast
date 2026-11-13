@@ -531,7 +531,7 @@ BREN.JK,Barito Renewables Energy Tbk.,ID,전기·가스,power
 AMMN.JK,Amman Mineral Internasional Tbk,ID,소재,
 ASII.JK,Astra International Tbk,ID,산업재,
 TLKM.JK,Telkom Indonesia (Persero) Tbk.,ID,통신·미디어,
-BBNI.JK,Bank Negara Indonesia  (Persero,ID,금융,fin
+BBNI.JK,Bank Negara Indonesia,ID,금융,fin
 TPIA.JK,Chandra Asri Pacific Tbk.,ID,소재,
 DSSA.JK,Dian Swastatika Sentosa Tbk,ID,에너지,
 UNTR.JK,United Tractors Tbk,ID,소재,
@@ -573,113 +573,112 @@ BUKA.JK,Bukalapak.com Tbk.,ID,소비(쇼핑·자동차),net
 SIDO.JK,Industri Jamu dan Farmasi Sido,ID,필수소비(음식·생활),bio
 ESSA.JK,ESSA Industries Indonesia Tbk.,ID,소재,
 ARTO.JK,Bank Jago Tbk.,ID,금융,fin
-SAP.DE,SAP SE                        I,DE,기술,net
-SIE.DE,SIEMENS AG                    N,DE,산업재,robot|power
-AIR.DE,Airbus SE                     A,DE,산업재,defense
-DTE.DE,DEUTSCHE TELEKOM AG           N,DE,통신·미디어,
-ENR.DE,Siemens Energy AG             N,DE,산업재,power
+SAP.DE,SAP SE,DE,기술,net
+SIE.DE,SIEMENS AG,DE,산업재,robot|power
+AIR.DE,Airbus SE,DE,산업재,defense
+DTE.DE,DEUTSCHE TELEKOM AG,DE,통신·미디어,
+ENR.DE,Siemens Energy AG,DE,산업재,power
 MUV2.DE,MUENCHENER RUECKVERS.-GES. AG N,DE,금융,fin
-IFX.DE,INFINEON TECHNOLOGIES AG      N,DE,기술,semi
-DHL.DE,DHL AG                        N,DE,산업재,
-MRK.DE,MERCK KGAA                    I,DE,헬스케어,bio|semi
-DBK.DE,DEUTSCHE BANK AG              N,DE,금융,fin
-BAYN.DE,Bayer AG                      N,DE,헬스케어,bio
-DB1.DE,DEUTSCHE BOERSE AG            N,DE,금융,fin
-EOAN.DE,E.ON SE                       N,DE,전기·가스,power
-SHL.DE,Siemens Healthineers AG       N,DE,헬스케어,bio
-BAS.DE,BASF SE                       N,DE,소재,
-RWE.DE,RWE AG                        I,DE,전기·가스,power
-CBK.DE,Commerzbank AG                I,DE,금융,fin
-P911.DE,Dr. Ing. h.c. F. Porsche AG   I,DE,소비(쇼핑·자동차),
-RHM.DE,RHEINMETALL AG                I,DE,산업재,defense
-MBG.DE,Mercedes-Benz Group AG        N,DE,소비(쇼핑·자동차),
-VOW3.DE,VOLKSWAGEN AG                 V,DE,소비(쇼핑·자동차),
+IFX.DE,INFINEON TECHNOLOGIES AG,DE,기술,semi
+DHL.DE,DHL AG,DE,산업재,
+MRK.DE,MERCK KGAA,DE,헬스케어,bio|semi
+DBK.DE,DEUTSCHE BANK AG,DE,금융,fin
+BAYN.DE,Bayer AG,DE,헬스케어,bio
+DB1.DE,DEUTSCHE BOERSE AG,DE,금융,fin
+EOAN.DE,E.ON SE,DE,전기·가스,power
+SHL.DE,Siemens Healthineers AG,DE,헬스케어,bio
+BAS.DE,BASF SE,DE,소재,
+RWE.DE,RWE AG,DE,전기·가스,power
+CBK.DE,Commerzbank AG,DE,금융,fin
+P911.DE,Dr. Ing. h.c. F. Porsche AG,DE,소비(쇼핑·자동차),
+RHM.DE,RHEINMETALL AG,DE,산업재,defense
+MBG.DE,Mercedes-Benz Group AG,DE,소비(쇼핑·자동차),
+VOW3.DE,VOLKSWAGEN AG,DE,소비(쇼핑·자동차),
 HNR1.DE,HANNOVER RUECK SE NA O.N.,DE,금융,fin
-BMW.DE,BAYERISCHE MOTOREN WERKE AG   S,DE,소비(쇼핑·자동차),
-HEN3.DE,Henkel AG & Co. KGaA          I,DE,필수소비(음식·생활),
-TLX.DE,Talanx AG                     N,DE,금융,fin
-DTG.DE,Daimler Truck Holding AG      N,DE,산업재,
-HEI.DE,Heidelberg Materials AG       I,DE,소재,
-ADS.DE,adidas AG                     N,DE,소비(쇼핑·자동차),
-HLAG.DE,Hapag-Lloyd AG                N,DE,산업재,
-SRT3.DE,SARTORIUS AG                  V,DE,헬스케어,bio
-MTX.DE,MTU Aero Engines AG           N,DE,산업재,defense
-BEI.DE,BEIERSDORF AG                 I,DE,필수소비(음식·생활),
-VNA.DE,Vonovia SE                    N,DE,부동산,
-SY1.DE,Symrise AG                    I,DE,소재,
-1COV.DE,Covestro AG                   I,DE,기타,
-FME.DE,Fresenius Medical Care AG     I,DE,헬스케어,bio
-EVK.DE,Evonik Industries AG          N,DE,소재,
-HAG.DE,HENSOLDT AG                   I,DE,산업재,defense
-QIA.DE,Qiagen N.V.                   A,DE,헬스케어,bio
-BNR.DE,Brenntag SE                   N,DE,소재,
-PAH3.DE,Porsche Automobil Holding SE  I,DE,소비(쇼핑·자동차),
-TKA.DE,thyssenkrupp AG               I,DE,산업재,defense
-ZAL.DE,Zalando SE                    I,DE,소비(쇼핑·자동차),net
-KGX.DE,KION GROUP AG                 I,DE,산업재,robot
-AIXA.DE,AIXTRON SE                    N,DE,기술,semi
-JEN.DE,JENOPTIK AG                   N,DE,기술,semi
-HSBA.L,HSBC HOLDINGS PLC ORD $0.50 (UK,UK,금융,fin
-AZN.L,ASTRAZENECA PLC ORD SHS $0.25,UK,헬스케어,bio
-SHEL.L,SHELL PLC ORD EUR0.07,UK,에너지,
-RR.L,ROLLS-ROYCE HOLDINGS PLC ORD SH,UK,산업재,defense
-ULVR.L,UNILEVER PLC ORD 3.5P,UK,필수소비(음식·생활),
-RIO.L,RIO TINTO PLC ORD 10P,UK,소재,
+BMW.DE,BAYERISCHE MOTOREN WERKE AG,DE,소비(쇼핑·자동차),
+HEN3.DE,Henkel AG & Co. KGaA,DE,필수소비(음식·생활),
+TLX.DE,Talanx AG,DE,금융,fin
+DTG.DE,Daimler Truck Holding AG,DE,산업재,
+HEI.DE,Heidelberg Materials AG,DE,소재,
+ADS.DE,adidas AG,DE,소비(쇼핑·자동차),
+HLAG.DE,Hapag-Lloyd AG,DE,산업재,
+SRT3.DE,SARTORIUS AG,DE,헬스케어,bio
+MTX.DE,MTU Aero Engines AG,DE,산업재,defense
+BEI.DE,BEIERSDORF AG,DE,필수소비(음식·생활),
+VNA.DE,Vonovia SE,DE,부동산,
+SY1.DE,Symrise AG,DE,소재,
+FME.DE,Fresenius Medical Care AG,DE,헬스케어,bio
+EVK.DE,Evonik Industries AG,DE,소재,
+HAG.DE,HENSOLDT AG,DE,산업재,defense
+QIA.DE,Qiagen N.V.,DE,헬스케어,bio
+BNR.DE,Brenntag SE,DE,소재,
+PAH3.DE,Porsche Automobil Holding SE,DE,소비(쇼핑·자동차),
+TKA.DE,thyssenkrupp AG,DE,산업재,defense
+ZAL.DE,Zalando SE,DE,소비(쇼핑·자동차),net
+KGX.DE,KION GROUP AG,DE,산업재,robot
+AIXA.DE,AIXTRON SE,DE,기술,semi
+JEN.DE,JENOPTIK AG,DE,기술,semi
+HSBA.L,HSBC HOLDINGS PLC,UK,금융,fin
+AZN.L,ASTRAZENECA PLC,UK,헬스케어,bio
+SHEL.L,SHELL PLC,UK,에너지,
+RR.L,ROLLS-ROYCE HOLDINGS PLC,UK,산업재,defense
+ULVR.L,UNILEVER PLC,UK,필수소비(음식·생활),
+RIO.L,RIO TINTO PLC,UK,소재,
 BATS.L,BRITISH AMERICAN TOBACCO PLC OR,UK,필수소비(음식·생활),
 BP.L,BP PLC $0.25,UK,에너지,
-GSK.L,GSK PLC ORD 31 1/4P,UK,헬스케어,bio
-NG.L,NATIONAL GRID PLC ORD 12 204/47,UK,전기·가스,power
-GLEN.L,GLENCORE PLC ORD USD0.01,UK,소재,bat
-BARC.L,BARCLAYS PLC ORD 25P,UK,금융,fin
-BA.L,BAE SYSTEMS PLC ORD 2.5P,UK,산업재,defense
-CPG.L,COMPASS GROUP PLC ORD 11 1/20P,UK,소비(쇼핑·자동차),
-LLOY.L,LLOYDS BANKING GROUP PLC ORD 10,UK,금융,fin
-REL.L,RELX PLC ORD 14 51/116P,UK,산업재,
-NWG.L,NATWEST GROUP PLC ORD 107.69P,UK,금융,fin
-STAN.L,STANDARD CHARTERED PLC ORD USD0,UK,금융,fin
+GSK.L,GSK PLC,UK,헬스케어,bio
+NG.L,NATIONAL GRID PLC,UK,전기·가스,power
+GLEN.L,GLENCORE PLC,UK,소재,bat
+BARC.L,BARCLAYS PLC,UK,금융,fin
+BA.L,BAE SYSTEMS PLC,UK,산업재,defense
+CPG.L,COMPASS GROUP PLC,UK,소비(쇼핑·자동차),
+LLOY.L,LLOYDS BANKING GROUP PLC,UK,금융,fin
+REL.L,RELX PLC,UK,산업재,
+NWG.L,NATWEST GROUP PLC,UK,금융,fin
+STAN.L,STANDARD CHARTERED PLC,UK,금융,fin
 LSEG.L,LONDON STOCK EXCHANGE GROUP PLC,UK,금융,fin
-DGE.L,DIAGEO PLC ORD 28 101/108P,UK,필수소비(음식·생활),
-AAL.L,ANGLO AMERICAN PLC ORD USD0.623,UK,소재,
-RKT.L,RECKITT BENCKISER GROUP PLC ORD,UK,필수소비(음식·생활),
-TSCO.L,TESCO PLC ORD 6 1/3P,UK,필수소비(음식·생활),
-ANTO.L,ANTOFAGASTA PLC ORD 5P,UK,소재,
-SSE.L,SSE PLC ORD 50P,UK,전기·가스,power
-HLN.L,HALEON PLC ORD GBP0.01,UK,헬스케어,bio
-VOD.L,VODAFONE GROUP PLC ORD USD0.20,UK,통신·미디어,
-III.L,3I GROUP PLC ORD 73 19/22P,UK,금융,fin
-EXPN.L,EXPERIAN PLC ORD USD0.10,UK,산업재,
+DGE.L,DIAGEO PLC,UK,필수소비(음식·생활),
+AAL.L,ANGLO AMERICAN PLC,UK,소재,
+RKT.L,RECKITT BENCKISER GROUP PLC,UK,필수소비(음식·생활),
+TSCO.L,TESCO PLC,UK,필수소비(음식·생활),
+ANTO.L,ANTOFAGASTA PLC,UK,소재,
+SSE.L,SSE PLC,UK,전기·가스,power
+HLN.L,HALEON PLC,UK,헬스케어,bio
+VOD.L,VODAFONE GROUP PLC,UK,통신·미디어,
+III.L,3I GROUP PLC,UK,금융,fin
+EXPN.L,EXPERIAN PLC,UK,산업재,
 IHG.L,INTERCONTINENTAL HOTELS GROUP P,UK,소비(쇼핑·자동차),
-PRU.L,PRUDENTIAL PLC ORD 5P,UK,금융,fin
-AV.L,AVIVA PLC ORD 32 17/19P,UK,금융,fin
-IMB.L,IMPERIAL BRANDS PLC ORD 10P,UK,필수소비(음식·생활),
-BT-A.L,BT GROUP PLC ORD 5P,UK,통신·미디어,
-NXT.L,NEXT PLC ORD 10P,UK,소비(쇼핑·자동차),
-LGEN.L,LEGAL & GENERAL GROUP PLC ORD 2,UK,금융,fin
+PRU.L,PRUDENTIAL PLC,UK,금융,fin
+AV.L,AVIVA PLC,UK,금융,fin
+IMB.L,IMPERIAL BRANDS PLC,UK,필수소비(음식·생활),
+BT-A.L,BT GROUP PLC,UK,통신·미디어,
+NXT.L,NEXT PLC,UK,소비(쇼핑·자동차),
+LGEN.L,LEGAL & GENERAL GROUP PLC,UK,금융,fin
 ABF.L,ASSOCIATED BRITISH FOODS PLC OR,UK,필수소비(음식·생활),
-SGRO.L,SEGRO PLC ORD 10P,UK,부동산,
-INF.L,INFORMA PLC ORD 0.1P,UK,통신·미디어,
-ADM.L,ADMIRAL GROUP PLC ORD 0.1P,UK,금융,fin
-SN.L,SMITH & NEPHEW PLC ORD USD0.20,UK,헬스케어,bio
-BNZL.L,BUNZL PLC ORD 32 1/7P,UK,산업재,
+SGRO.L,SEGRO PLC,UK,부동산,
+INF.L,INFORMA PLC,UK,통신·미디어,
+ADM.L,ADMIRAL GROUP PLC,UK,금융,fin
+SN.L,SMITH & NEPHEW PLC,UK,헬스케어,bio
+BNZL.L,BUNZL PLC,UK,산업재,
 MNG.L,M&G PLC,UK,금융,fin
-SMIN.L,SMITHS GROUP PLC ORD 37.5P,UK,산업재,robot
-CNA.L,CENTRICA PLC ORD 6 14/81P,UK,전기·가스,power
-LAND.L,LAND SECURITIES GROUP PLC ORD 1,UK,부동산,
+SMIN.L,SMITHS GROUP PLC,UK,산업재,robot
+CNA.L,CENTRICA PLC,UK,전기·가스,power
+LAND.L,LAND SECURITIES GROUP PLC,UK,부동산,
 BAB.L,BABCOCK INTERNATIONAL GROUP PLC,UK,산업재,defense
-WPP.L,WPP PLC ORD 10P,UK,통신·미디어,
-AUTO.L,AUTOTRADER GROUP PLC ORD 1P,UK,통신·미디어,net
-PSN.L,PERSIMMON PLC ORD 10P,UK,소비(쇼핑·자동차),
+WPP.L,WPP PLC,UK,통신·미디어,
+AUTO.L,AUTOTRADER GROUP PLC,UK,통신·미디어,net
+PSN.L,PERSIMMON PLC,UK,소비(쇼핑·자동차),
 601288.SS,농업은행,CN,금융,fin
 600519.SS,귀주모태주,CN,필수소비(음식·생활),
 601318.SS,중국평안보험,CN,금융,fin
 601766.SS,CRRC(중국중차),CN,산업재,
-ALV.DE,Allianz SE                    v,DE,금융,fin
-FRE.DE,Fresenius SE & Co. KGaA       N,DE,헬스케어,bio
-CON.DE,CONTINENTAL AG                I,DE,소비(쇼핑·자동차),
-G1A.DE,GEA Group AG                  I,DE,산업재,robot
-PUM.DE,PUMA SE                       I,DE,소비(쇼핑·자동차),
-HLMA.L,HALMA PLC ORD 10P,UK,산업재,
-CRDA.L,CRODA INTERNATIONAL PLC ORD 10.,UK,소재,
+ALV.DE,Allianz SE,DE,금융,fin
+FRE.DE,Fresenius SE & Co. KGaA,DE,헬스케어,bio
+CON.DE,CONTINENTAL AG,DE,소비(쇼핑·자동차),
+G1A.DE,GEA Group AG,DE,산업재,robot
+PUM.DE,PUMA SE,DE,소비(쇼핑·자동차),
+HLMA.L,HALMA PLC,UK,산업재,
+CRDA.L,CRODA INTERNATIONAL PLC,UK,소재,
 D05.SI,DBS,SG,금융,fin
 O39.SI,OCBC Bank,SG,금융,fin
 Z74.SI,Singtel,SG,통신·미디어,
