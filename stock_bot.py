@@ -442,6 +442,12 @@ def fetch_prices(tickers, fresh=None):
                     print(f"{t} → {alt} 로 찾았어요 (stocks.csv에서 고쳐주면 좋아요)")
             except Exception:
                 pass
+    # 액면분할·자료 오류로 하루 만에 몇 배씩 튄 가격 바로잡기 (pricecache.fix_jumps 설명 참고)
+    for t in list(closes):
+        try:
+            closes[t] = pricecache.fix_jumps(closes[t], 3.0, t)
+        except Exception as e:
+            print(t, "가격 튐 점검 실패:", e)
     missing = [t for t in tickers if t not in closes]
     if missing:
         print("가격을 못 받은 종목:", ", ".join(missing))
@@ -514,6 +520,35 @@ def naver_kr(ticker):
             "eps": vals.get("eps", np.nan), "_keys": list(vals)}
 
 
+def naver_growth(ticker):
+    """한국 종목 '작년보다 번 돈': 네이버 분기 실적의 순이익(연결, 뉴스 기사와 같은 기준)으로
+    가장 최근 '확정' 분기 ÷ 작년 같은 분기 − 1. 작년이 손해(0 이하)였으면 비교할 수 없어 빈칸.
+    (야후는 한국 종목을 지배주주 몫으로 세고 한 분기 늦게 올라올 때가 있어 네이버를 씀)"""
+    code = ticker.split(".")[0]
+    try:
+        r = requests.get(f"https://m.stock.naver.com/api/stock/{code}/finance/quarter",
+                         headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+        fi = (r.json() or {}).get("financeInfo") or {}
+    except Exception as e:
+        print(f"{ticker} 네이버 분기 실적 못 받음: {e}")
+        return np.nan, ""
+    keys = sorted(t["key"] for t in fi.get("trTitleList", []) if t.get("isConsensus") == "N")
+    row = next((x for x in fi.get("rowList", []) if x.get("title") == "당기순이익"), None)
+    if not keys or row is None:
+        return np.nan, ""
+    val = lambda k: num(str((row.get("columns", {}).get(k) or {}).get("value", "")).replace(",", ""))
+    for k in reversed(keys):              # 값이 있는 가장 최근 확정 분기
+        cur = val(k)
+        if pd.isna(cur):
+            continue
+        prev = val(str(int(k[:4]) - 1) + k[4:])
+        q = f"{k[:4]}.{k[4:]}"
+        if pd.isna(prev) or prev <= 0:
+            return np.nan, q
+        return cur / prev - 1, q
+    return np.nan, ""
+
+
 def fetch_fundamentals(tickers, today, refresh=None):
     """종목마다 PER·PBR·ROE·이익 성장·실적발표일을 받아옵니다. 못 받으면 빈칸."""
     import yfinance as yf
@@ -527,6 +562,17 @@ def fetch_fundamentals(tickers, today, refresh=None):
         growth = num(info.get("earningsGrowth"))
         if pd.isna(growth):
             growth = num(info.get("earningsQuarterlyGrowth"))
+        gq = ""
+        try:
+            mrq = info.get("mostRecentQuarter")
+            if mrq:
+                gq = pd.Timestamp(int(mrq), unit="s").strftime("%Y.%m")
+        except Exception:
+            pass
+        if t.endswith((".KS", ".KQ")):   # 네이버(연결 순이익)가 같은 분기거나 더 최신이면 네이버 값으로
+            ng, nq = naver_growth(t)
+            if nq and (nq >= gq or pd.isna(growth)):
+                growth, gq = ng, nq
         price = num(info.get("currentPrice"))
         if pd.isna(price):
             price = num(info.get("regularMarketPrice"))
@@ -555,6 +601,7 @@ def fetch_fundamentals(tickers, today, refresh=None):
             "pbr": pbr,
             "roe": num(info.get("returnOnEquity")),
             "growth": growth,
+            "gq": gq,
             "margin": num(info.get("profitMargins")),
             "earn": _safe_earn(tk, info, today, t),
         }
@@ -578,6 +625,7 @@ def fetch_fundamentals(tickers, today, refresh=None):
                 d = {k: num(v.get(k)) for k in keys}
                 d["earn"] = _to_date(v.get("earn")) if v.get("earn") else None
                 d["ts"] = v.get("ts", "")
+                d["gq"] = v.get("gq", "")
                 cache[t] = d
     except Exception:
         pass
@@ -586,11 +634,17 @@ def fetch_fundamentals(tickers, today, refresh=None):
         v = cache.get(t)
         if v is None:
             return (0, "")
-        if blank(v):
+        if blank(v) or (t.endswith((".KS", ".KQ")) and not v.get("gq")):   # 한국: 네이버 분기 실적으로 아직 안 바꾼 것
             return (1, v["ts"])
         if v["earn"] is None or v["earn"] < today:
             return (2, v["ts"])
+        if t.endswith((".KS", ".KQ")) and v.get("gq", "") < due_q:   # 새 분기 보고서가 나왔을 때라 다시 받기
+            return (2, v["ts"])
         return (3, v["ts"])
+    # 분기 보고서 마감(분기 끝 + 45일)이 지난 가장 최근 분기, 예: 11월 16일부터는 "2026.09"
+    _qe = pd.Timestamp(today) - pd.Timedelta(days=50)
+    due_q = f"{_qe.year}.{(_qe.quarter * 3):02d}" if _qe.month % 3 == 0 and _qe.is_month_end else \
+        (pd.Period(_qe, "Q") - 1).end_time.strftime("%Y.%m")
     order = sorted(tickers, key=need)
     n_ref = FUND_REFRESH if refresh is None else refresh   # 장 마감 알림 때는 0 (저장해 둔 값만 씀)
     todo = [t for t in order if need(t)[0] < 3][:n_ref] or []
@@ -619,12 +673,14 @@ def fetch_fundamentals(tickers, today, refresh=None):
         os.makedirs(os.path.dirname(FUND_CACHE), exist_ok=True)
         with open(FUND_CACHE, "w", encoding="utf-8") as f:
             json.dump({t: {**{k: (None if pd.isna(v.get(k, np.nan)) else float(v[k])) for k in keys},
-                           "earn": v["earn"].isoformat() if v.get("earn") else None, "ts": v.get("ts", "")}
+                           "earn": v["earn"].isoformat() if v.get("earn") else None, "ts": v.get("ts", ""),
+                           "gq": v.get("gq", "")}
                        for t, v in cache.items()}, f, ensure_ascii=False)
     except Exception as e:
         print("재무지표 저장 실패:", e)
 
-    out = {t: {k: cache.get(t, {}).get(k, np.nan) for k in keys} | {"earn": cache.get(t, {}).get("earn")}
+    out = {t: {k: cache.get(t, {}).get(k, np.nan) for k in keys}
+           | {"earn": cache.get(t, {}).get("earn"), "gq": cache.get(t, {}).get("gq", "")}
            for t in tickers}
     for t, v in out.items():   # 지난 실적발표일은 보여주지 않음
         if v["earn"] is not None and v["earn"] < today:
@@ -1214,6 +1270,12 @@ def recent_panel(sub, mk):
         if c == "pbr":
             dv = v if not pd.isna(v) and v > 0 else 9999
             return f"<td data-v='{dv:.2f}'>{times(v)}</td>"
+        if c == "growth" and not pd.isna(v):
+            q = r.get("gq")
+            q = q if isinstance(q, str) else ""
+            tip = f" title='{E(q)} 분기 순이익을 작년 같은 분기와 비교'" if q else ""
+            txt = f"{v + 1:.0f}배" if v >= 3 else None   # +300% 넘으면 '몇 배'로 (작년 이익이 아주 작았던 경우)
+            return f"<td data-v='{v:.4f}'{tip}>{updown(v, txt)}</td>"
         if c == "earn_days":
             if pd.isna(v):
                 return "<td data-v='9999'>-</td>"
