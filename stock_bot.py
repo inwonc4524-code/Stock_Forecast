@@ -1583,12 +1583,12 @@ def main():
             for c, m in msgs.items():   # 나라마다 알림 하나씩
                 if m:
                     send_ntfy(f"{FLAG.get(c, '')} {MKT_NAME.get(c, c)}장 마감 · 오늘 많이 오른 종목", m,
-                              f"{url}#long-all-1d" if url else url)
+                              f"{url}#long-{c.lower()}-1d" if url else url)   # 누르면 그 나라 1일 순위로
         else:
             send_ntfy("오늘의 개별종목 추천", msg, url)
             us_msg = close_message(df, "US", today)   # 어젯밤 끝난 미국장도 따로 알림
             if us_msg:
-                send_ntfy("🇺🇸 미국장 마감 · 어젯밤 많이 오른 종목", us_msg, f"{url}#long-all-1d" if url else url)
+                send_ntfy("🇺🇸 미국장 마감 · 어젯밤 많이 오른 종목", us_msg, f"{url}#long-us-1d" if url else url)
 
 
 if __name__ == "__main__":
