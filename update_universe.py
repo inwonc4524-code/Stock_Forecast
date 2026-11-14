@@ -110,11 +110,13 @@ def kr_top():
 
 
 def clean_name(n):
-    """야후 이름의 군더더기 빼기: 'SAP SE      I' → 'SAP SE', 'TESCO PLC ORD 6 1/3P' → 'TESCO PLC'"""
+    """야후 이름의 군더더기 빼기: 'SAP SE      I' → 'SAP SE', 'adidas AG' → 'ADIDAS AG', 'TESCO PLC ORD 6 1/3P' → 'TESCO PLC'"""
     n = re.sub(r"\s{2,}.*$", "", n)
     n = re.sub(r"\s+ORD\b.*$", "", n)
     n = re.sub(r"\s+\($", "", n)
-    return n.strip()
+    n = n.strip()
+    # 영어 이름은 모두 대문자로 맞춰요 (사용자 결정 2026-11-14). 한글 이름은 그대로.
+    return n if re.search("[가-힣]", n) else n.upper()
 
 def kr_theme(name):
     for words, t in KR_THEME_WORDS:
