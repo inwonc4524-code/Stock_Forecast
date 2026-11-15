@@ -459,6 +459,47 @@ def fetch_prices(tickers, fresh=None):
     return closes
 
 
+def pbr_ok(v):
+    """PBR(주가 ÷ 1주당 재산)이 말이 되는 값인지. 마이너스는 재산보다 빚이 많은 회사라 실제로 있어요(맥도날드 등).
+    0.05배보다 작거나 300배보다 크면 자료 오류로 봐요(버크셔 B주 0.001배, 인도네시아 36만 배 등)."""
+    return pd.isna(v) or v < 0 or 0.05 <= v <= 300
+
+
+def margin_ok(v):
+    """순이익률이 ±500% 를 넘으면 자료 오류로 보고 비워요 (예: 0006.HK 2,496%)."""
+    return np.nan if pd.isna(v) or abs(v) > 5 else v
+
+
+_FX = {}
+
+
+def fx_rate(src, dst):
+    """src 통화 1 = dst 통화 몇 (야후 환율). 못 받으면 NaN."""
+    if not src or not dst or src == dst:
+        return 1.0
+    key = (src, dst)
+    if key not in _FX:
+        try:
+            _FX[key] = num(yf.Ticker(f"{src}{dst}=X").fast_info["last_price"])
+        except Exception:
+            _FX[key] = np.nan
+    return _FX[key]
+
+
+def fx_fixed_pbr(price, bv, cur, fcur):
+    """장부 통화(fcur)와 주가 통화(cur)가 다를 때 장부를 주가 통화로 바꿔 PBR 을 다시 계산. 그래도 이상하면 NaN."""
+    if pd.isna(price) or pd.isna(bv) or bv <= 0:
+        return np.nan
+    if cur == "GBp":            # 영국 주가는 펜스(1/100 파운드)
+        price, cur = price / 100, "GBP"
+    if cur and fcur and cur != fcur:
+        rate = fx_rate(fcur, cur)
+        if not pd.isna(rate) and rate > 0:
+            v = price / (bv * rate)
+            return v if pbr_ok(v) else np.nan
+    return np.nan
+
+
 def num(v):
     """숫자로 바꿀 수 없거나 무한대면 NaN"""
     try:
@@ -587,10 +628,14 @@ def fetch_fundamentals(tickers, today, refresh=None):
             if not pd.isna(eps) and not pd.isna(price) and eps != 0:
                 per = price / eps if eps > 0 else -1.0
         pbr = num(info.get("priceToBook"))
+        bv = num(info.get("bookValue"))
         if pd.isna(pbr):   # 주가 ÷ 주당순자산
-            bv = num(info.get("bookValue"))
             if not pd.isna(bv) and not pd.isna(price) and bv > 0:
                 pbr = price / bv
+        if not pbr_ok(pbr):
+            # 주가와 장부(재무제표) 통화가 다른 회사(예: 인도네시아 바리토 리뉴어블 — 주가는 루피아, 장부는 달러)는
+            # 야후 PBR이 수만 배로 나와요(2026-11-15). 장부 통화를 주가 통화로 바꿔 다시 계산하고, 그래도 이상하면 비워요.
+            pbr = fx_fixed_pbr(price, bv, info.get("currency"), info.get("financialCurrency"))
         if t.endswith((".KS", ".KQ")) and (pd.isna(per) or pd.isna(pbr)):
             nv = naver_kr(t)
             if t == "005930.KS":   # 네이버 자료가 어떻게 오는지 확인용
@@ -607,7 +652,7 @@ def fetch_fundamentals(tickers, today, refresh=None):
             "roe": num(info.get("returnOnEquity")),
             "growth": growth,
             "gq": gq,
-            "margin": num(info.get("profitMargins")),
+            "margin": margin_ok(num(info.get("profitMargins"))),
             "earn": _safe_earn(tk, info, today, t),
         }
 
@@ -640,6 +685,8 @@ def fetch_fundamentals(tickers, today, refresh=None):
         if v is None:
             return (0, "")
         if blank(v) or (t.endswith((".KS", ".KQ")) and not v.get("gq")):   # 한국: 네이버 분기 실적으로 아직 안 바꾼 것
+            return (1, v["ts"])
+        if not pd.isna(v.get("pbr", np.nan)) and not pbr_ok(v["pbr"]):   # 통화가 달라 PBR 이 이상했던 곳
             return (1, v["ts"])
         if v["earn"] is None or v["earn"] < today:
             return (2, v["ts"])
@@ -929,6 +976,11 @@ def build_table(universe, closes, funds, today):
         if c not in df:
             df[c] = np.nan
         df[c] = pd.to_numeric(df[c], errors="coerce")
+    bad = df.pbr.notna() & ~df.pbr.apply(pbr_ok)
+    if bad.any():
+        print("말이 안 되는 PBR 이라 비움:", ", ".join(f"{t}({v:g})" for t, v in zip(df.ticker[bad], df.pbr[bad])))
+        df.loc[bad, "pbr"] = np.nan
+    df["margin"] = df.margin.apply(margin_ok)
     return pd.concat([score(g) for _, g in df.groupby("market", sort=False)], ignore_index=True)
 
 
