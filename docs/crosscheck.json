@@ -1,7 +1,16 @@
 {
- "source_ok": 51,
+ "source_ok": 363,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [],
- "no_source_markets": []
+ "excluded": [
+  "게마뎁트 그룹 (1년)",
+  "PV시추 (1년)"
+ ],
+ "no_source_markets": [
+  "CA",
+  "DE",
+  "ID",
+  "SG",
+  "UK"
+ ]
 }
