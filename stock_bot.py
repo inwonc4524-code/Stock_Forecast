@@ -1716,7 +1716,8 @@ def main():
     if url:   # 알림에서 열 때 예전에 저장된 화면 대신 항상 새 화면이 나오게
         url = f"{url}{'&' if '?' in url else '?'}v={build}"
     if os.environ.get("GITHUB_EVENT_NAME") == "push" or os.environ.get("SKIP_ALERT"):
-        print("코드·이유 파일을 고쳐서 다시 만든 거라 알림은 보내지 않아요.")
+        print("코드·이유 파일을 고쳐서 다시 만든 거라 알림은 보내지 않아요." if os.environ.get("GITHUB_EVENT_NAME") == "push"
+              else "이번 실행은 알림을 보내지 않아요(오늘 알림은 이미 갔거나 알림 없이 시험).")
     elif not args.demo:
         if closes_mk:
             for c, m in msgs.items():   # 나라마다 알림 하나씩
