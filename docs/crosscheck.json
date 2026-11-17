@@ -1,8 +1,15 @@
 {
- "source_ok": 358,
+ "source_ok": 478,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [],
+ "excluded": [
+  "브리지스톤 (1년)",
+  "빈그룹 (1년)",
+  "빈홈스 (1년)",
+  "베트남산업은행 (1년)",
+  "베트남테콤은행 (1달,1년)",
+  "호치민개발은행 (1년)"
+ ],
  "no_source_markets": [
   "CA",
   "DE",
