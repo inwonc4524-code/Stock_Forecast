@@ -1,13 +1,7 @@
 {
- "source_ok": 331,
+ "source_ok": 51,
  "source_none": 0,
  "fixed_last": [],
  "excluded": [],
- "no_source_markets": [
-  "CA",
-  "DE",
-  "ID",
-  "SG",
-  "UK"
- ]
+ "no_source_markets": []
 }
