@@ -1,18 +1,7 @@
 {
- "source_ok": 331,
+ "source_ok": 51,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [
-  "하이브 (1일)",
-  "호텔신라 (1일)",
-  "에스엠 (1일,1주,1달)",
-  "JYP Ent. (1일)"
- ],
- "no_source_markets": [
-  "CA",
-  "DE",
-  "ID",
-  "SG",
-  "UK"
- ]
+ "excluded": [],
+ "no_source_markets": []
 }
