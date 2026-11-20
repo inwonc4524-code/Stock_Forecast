@@ -1,10 +1,7 @@
 {
- "source_ok": 193,
+ "source_ok": 54,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [
-  "키엔스 (1주,1달,1년)",
-  "브리지스톤 (1년)"
- ],
+ "excluded": [],
  "no_source_markets": []
 }
