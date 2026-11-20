@@ -1,7 +1,17 @@
 {
- "source_ok": 51,
+ "source_ok": 422,
  "source_none": 0,
- "fixed_last": [],
- "excluded": [],
- "no_source_markets": []
+ "fixed_last": [
+  "샌디스크 (94.39→755.16)"
+ ],
+ "excluded": [
+  "샌디스크 (1일)"
+ ],
+ "no_source_markets": [
+  "CA",
+  "DE",
+  "ID",
+  "SG",
+  "UK"
+ ]
 }
