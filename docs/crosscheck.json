@@ -1,9 +1,11 @@
 {
- "source_ok": 340,
+ "source_ok": 475,
  "source_none": 0,
  "fixed_last": [],
  "excluded": [
-  "샌디스크 (1일)"
+  "샌디스크 (1일)",
+  "키엔스 (1주,1달,1년)",
+  "브리지스톤 (1년)"
  ],
  "no_source_markets": [
   "CA",
