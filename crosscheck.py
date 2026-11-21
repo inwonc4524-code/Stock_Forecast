@@ -22,6 +22,8 @@ import numpy as np
 import pandas as pd
 import requests
 
+import pricecache
+
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/130.0 Safari/537.36"}
 WORLD = {"US", "JP", "HK", "CN", "VN"}   # 네이버 해외주식으로 비교할 수 있는 나라
@@ -137,6 +139,8 @@ def run(closes, raw, mkt_of, names=None, state_path=None):
     foreign = [t for t in tickers if mkt_of.get(t) in WORLD]
     pick = [t for t in tickers if mkt_of.get(t) in ("KR", "US")]   # 한국·미국은 매번 전부 (알림에 바로 쓰여서)
     pick += [t for t in foreign if big_move(t)]
+    # 베트남은 야후 마지막 날 가격이 하루 전 값인 때가 많아서(2026-11-17~20 매일 8~10곳 2% 넘게 틀림) 매번 전부 비교 (2026-11-21 점검)
+    pick += [t for t in foreign if mkt_of.get(t) == "VN"]
     if foreign:
         start = rot % len(foreign)
         pick += (foreign[start:] + foreign[:start])[:ROTATE]
@@ -156,6 +160,12 @@ def run(closes, raw, mkt_of, names=None, state_path=None):
             REPORT["source_none"] += 1
             continue
         REPORT["source_ok"] += 1
+        # 네이버 해외 가격은 분할 전 옛날 가격을 그대로 둘 때가 있어서, 비교 전에 야후 쪽과 같은 방법으로 분할 튐을 맞춰요
+        # (ETF 봇 2026-11-14 와 같은 방법, 개별종목 봇은 2026-11-21 점검 때 추가)
+        try:
+            src = pricecache.fix_jumps(src, 3.0, f"(비교용 네이버) {t}")
+        except Exception:
+            pass
         y = raw[t]
         last = y.index[-1]
         if last not in src.index:
@@ -164,6 +174,12 @@ def run(closes, raw, mkt_of, names=None, state_path=None):
         #    (주의: 네이버 한국 일별 가격은 장 마감 뒤 넥스트레이드 애프터마켓(~20시)까지 합친 '통합' 값이라
         #     거래소 정규장 종가(15:30)와 몇백~몇천 원 다를 수 있어요. 그래서 작은 차이는 고치지 않아요 — 2026-11-13 확인)
         sv, yv = float(src.loc[last]), float(y.iloc[-1])
+        # 2026-11-21 점검: 액면분할 날 네이버가 아직 분할 전 가격을 주면(샌디스크 8→1 분할: 야후 94.39 · 네이버 755.16,
+        # 키엔스 1→5 분할: 야후 14,722 · 네이버 73,610) 맞는 야후 값을 틀린 값으로 '고쳐' 버렸어요.
+        # 두 값 차이가 분할 비율(2·3·4·5·8·10배 …)과 맞으면 분할 차이로 보고 이번엔 비교하지 않아요.
+        if sv > 0 and yv > 0 and abs(yv / sv - 1) > 0.3 and pricecache._nice(yv / sv) not in (None, 1):
+            REPORT.setdefault("split_skip", []).append(f"{names.get(t, t)} (야후 {yv:,.2f} · 네이버 {sv:,.2f})")
+            continue
         # 한국은 정규장 종가(15:30)를 쓰기로 해서(2026-11-13 사용자 결정), 통합 가격인 네이버 값으로 바꾸지 않아요
         if mkt_of.get(t) != "KR" and sv > 0 and abs(yv / sv - 1) > 0.02:
             ratio = sv / yv
@@ -193,6 +209,8 @@ def run(closes, raw, mkt_of, names=None, state_path=None):
             json.dump({"rot": rot + ROTATE}, open(state_path, "w"))
         except Exception:
             pass
+    if REPORT.get("split_skip"):
+        print("액면분할 차이로 이번엔 비교하지 않은 곳:", ", ".join(REPORT["split_skip"][:15]))
     print(f"다른 사이트와 비교: {REPORT['source_ok']}곳 비교 · 마지막 가격 고침 {len(REPORT['fixed_last'])}곳 · "
           f"순위에서 뺀 곳 {len(REPORT['excluded'])}곳 · 비교 자료 없음 {REPORT['source_none']}곳 · {took:.0f}초")
     return BAD
