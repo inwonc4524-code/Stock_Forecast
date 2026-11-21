@@ -960,15 +960,22 @@ def long_rank(rows):
 
 def build_table(universe, closes, funds, today):
     rows = []
+    short = []
     for _, u in universe.iterrows():
         s = closes.get(u.ticker)
         if s is None or len(s.dropna()) < MIN_DAYS:
+            # 2026-11-21 점검: 샌디스크가 아무 말 없이 빠져 있어서, 왜 빠졌는지 로그에 남겨요
+            if s is not None and len(s.dropna()):
+                sd = s.dropna()
+                short.append(f"{u.ticker}({len(sd)}일, {sd.index[0]:%Y-%m-%d}~{sd.index[-1]:%Y-%m-%d})")
             continue
         f = dict(funds.get(u.ticker, {}))
         earn = f.pop("earn", None)
         rows.append({**u.to_dict(), **indicators(s), **f,
                      "earn": earn.isoformat() if earn else "",
                      "earn_days": (earn - today).days if earn else np.nan})
+    if short:
+        print("자료가 짧아(상장 1년 미만 등) 점수표에서 뺀 종목:", ", ".join(short[:20]))
     if not rows:
         raise SystemExit("계산할 수 있는 종목이 없습니다. 데이터 연결을 확인하세요.")
     df = pd.DataFrame(rows)
