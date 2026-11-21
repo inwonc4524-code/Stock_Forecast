@@ -124,6 +124,56 @@ def trim_all(closes):
 CROSS_STATE = os.path.join(DOCS, "crosscheck_state.json")
 
 
+
+def naver_fill_short(closes, tickers):
+    """야후 가격이 없거나, 1년 치(MIN_DAYS)가 안 되게 짧거나, 2주 넘게 멈춘 해외 종목은 네이버 가격(최근 약 400일)으로
+    채워요 (2026-11-21 사용자 요청 — 샌디스크: 액면분할 뒤 야후가 4일치만 줘서 점수표에서 빠졌음).
+    야후에 있는 날은 야후 값을 그대로 두고, 그 앞 옛날 날만 네이버 값으로 이어 붙여요(겹치는 첫날 비율로 높이 맞춤).
+    한국 종목은 네이버 일별 가격이 애프터마켓까지 합친 값이라 쓰지 않아요(2026-11-13 사용자 결정).
+    상장한 지 얼마 안 된 회사는 네이버도 짧아서 그대로 빠져요."""
+    import pricecache
+    got = []
+    old_cut = pd.Timestamp.now().normalize() - pd.Timedelta(days=14)
+    for t in tickers:
+        mk = MKT_OF.get(t, "")
+        if mk not in crosscheck.WORLD:
+            continue
+        s = closes.get(t)
+        n = len(s.dropna()) if s is not None else 0
+        stale = n and pd.Timestamp(s.index[-1]).tz_localize(None) < old_cut if n else False
+        if n >= MIN_DAYS and not stale:
+            continue
+        try:
+            src = crosscheck.source(t, mk)
+        except Exception:
+            src = None
+        if src is None or len(src) < MIN_DAYS or len(src) < n + 20:
+            continue
+        src = src[src > 0]
+        try:
+            if n:
+                src.index = pd.DatetimeIndex(src.index).tz_localize(s.index.tz) if getattr(s.index, "tz", None) else src.index
+                src = crosscheck.align_split(src, RAW.get(t, s))
+            src = pricecache.fix_jumps(src, 3.0, f"(네이버로 채움) {t}")
+        except Exception as e:
+            print(t, "네이버 가격 다듬기 실패:", e)
+            continue
+
+        def join(y):
+            if y is None or not len(y) or stale:
+                return src.copy()
+            both = y.index.intersection(src.index)
+            if not len(both):
+                return src.copy()
+            d0 = both[0]
+            old = src[src.index < d0] * (float(y.loc[d0]) / float(src.loc[d0]))
+            return pd.concat([old, y[y.index >= d0]])
+        closes[t] = join(s)
+        RAW[t] = join(RAW.get(t))
+        got.append(f"{t}({n}일→{len(closes[t])}일)")
+    if got:
+        print("야후 가격이 짧거나 없어서 네이버 가격으로 채운 곳:", ", ".join(got))
+
 def cross_all(closes, universe, only=None):
     """야후 가격을 다른 사이트와 비교 (틀린 마지막 가격은 고치고, 크게 다른 기간은 순위에서 뺌)
     only 를 주면 그 종목들만 비교 (장 마감 알림 때 빠르게)"""
@@ -1675,6 +1725,10 @@ def main():
         closes = fetch_prices(tickers, fresh=target)
         tick("가격 받기")
         trim_all(closes)
+        try:
+            naver_fill_short(closes, tickers)
+        except Exception as e:
+            print("네이버로 채우기 실패:", e)
         # 빠르게: 네이버와 비교하는 일은 옆에서 동시에 하고, 그동안 야후에서 재무지표·시간별 가격을 받음
         with ThreadPoolExecutor(max_workers=1) as ex:
             cross = ex.submit(cross_all, closes, universe, target)
@@ -1689,6 +1743,20 @@ def main():
             for t, v in (pricecache.load_state("bad", {}) or {}).items():
                 if MKT_OF.get(t) not in only:
                     crosscheck.BAD.setdefault(t, v)
+        # 베트남 최근 가격을 네이버 값으로 맞춘 것(crosscheck.REPLACED)은 저장해 두고, 베트남을 새로 계산하지 않는
+        # 장 마감 실행(한국·중국·홍콩만)에서도 그대로 써요. 안 그러면 야후의 하루 밀린 값이 다시 보여요 (2026-11-21)
+        repl = {}
+        if only:
+            for t, v in (pricecache.load_state("naver_repl", {}) or {}).items():
+                if t in MKT_OF and MKT_OF.get(t) not in only and v and v[0] is not None and len(v[0]):
+                    RAW[t] = v[0].copy()
+                    if v[1] is not None and len(v[1]):
+                        closes[t] = v[1].copy()
+                    repl[t] = v
+            if repl:
+                print(f"지난번에 네이버 값으로 맞춘 가격을 다시 쓴 곳 {len(repl)}")
+        repl.update(crosscheck.REPLACED)
+        pricecache.save_state("naver_repl", repl)
         pricecache.save_state("intra", dict(INTRA))
         pricecache.save_state("bad", dict(crosscheck.BAD))
 

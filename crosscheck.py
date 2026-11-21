@@ -31,6 +31,8 @@ FAILS = {}   # 사이트별 연속 실패 수 (계속 실패하면 이번 실행
 ROTATE = 150                 # 해외는 한 번에 이만큼씩 돌아가며 비교 (+ 크게 움직인 곳은 항상)
 BAD = {}                     # 티커 → 순위에서 뺄 기간 {"1d","1w","1m",1}
 OPEN = {}                    # 티커 → (날짜, 거래소 공식 시작 가격) — 1일 '장 시작→마감' 계산용
+REPLACED = {}                # 티커 → (실제 가격, 수정종가) 네이버 값으로 맞춘 가격 (장 마감 실행에서 다시 쓰려고 저장)
+VN_DAYS = 30                 # 베트남은 최근 이만큼(날)을 네이버 값으로 맞춰요 (2026-11-21 사용자 요청)
 REPORT = {"source_ok": 0, "source_none": 0, "fixed_last": [], "excluded": [], "no_source_markets": []}
 
 
@@ -136,6 +138,28 @@ def align_split(src, y):
     except Exception:
         return src
 
+
+def vn_from_naver(base, src, last):
+    """베트남 종목의 최근 VN_DAYS 일 가격을 네이버 값으로 바꿔요 (2026-11-21 사용자 요청).
+    야후 베트남 가격은 마지막 날·그 전날이 하루 전 값인 때가 많아요(테콤은행 11/20: 야후 20,600 · 실제 21,200).
+    베트남은 애프터마켓이 없어서 네이버 값 = 거래소 공식 종가.
+    야후의 옛날 가격(배당 조정 등)과 높이를 맞추려고, 날마다 '야후 ÷ 네이버' 비율의 7일 가운데 값을 곱해요
+    (하루 밀린 값 때문에 생기는 흔들림은 없애고, 배당으로 생긴 높이 차이는 살려요)."""
+    if base is None or not len(base):
+        return None
+    win0 = last - pd.Timedelta(days=VN_DAYS)
+    s = src[(src.index > win0) & (src.index <= last)].dropna()
+    s = s[s > 0]
+    both = s.index.intersection(base.index)
+    if len(s) < 5 or len(both) < 5:
+        return None
+    r = (base.loc[both] / s.loc[both]).reindex(s.index)
+    k = r.rolling(7, center=True, min_periods=3).median().interpolate(limit_direction="both")
+    if k.isna().any():
+        return None
+    new = s * k
+    return pd.concat([base[base.index <= win0], new]).sort_index()
+
 def run(closes, raw, mkt_of, names=None, state_path=None):
     """closes: 수익률용(배당 포함) / raw: 실제 가격. 틀린 마지막 가격은 고치고, 수익률이 크게 다른 기간은 BAD에 기록."""
     names = names or {}
@@ -194,6 +218,19 @@ def run(closes, raw, mkt_of, names=None, state_path=None):
         last = y.index[-1]
         if last not in src.index:
             continue   # 다른 사이트가 아직 그 날 가격이 없음 → 비교 안 함
+        if mkt_of.get(t) == "VN":
+            ny = vn_from_naver(y, src, last)
+            nc = vn_from_naver(closes.get(t), src, last) if t in closes else None
+            if ny is not None:
+                diff = (ny / y.reindex(ny.index) - 1).abs().iloc[-VN_DAYS:].max()
+                raw[t] = ny
+                if nc is not None:
+                    closes[t] = nc
+                REPLACED[t] = (raw[t].copy(), closes.get(t).copy() if t in closes else None)
+                if pd.notna(diff) and diff > 0.005:
+                    REPORT.setdefault("vn_naver", []).append(names.get(t, t))
+                y = raw[t]
+                last = y.index[-1]
         # 1) 마지막 가격: 2% 넘게 다를 때만 고침
         #    (주의: 네이버 한국 일별 가격은 장 마감 뒤 넥스트레이드 애프터마켓(~20시)까지 합친 '통합' 값이라
         #     거래소 정규장 종가(15:30)와 몇백~몇천 원 다를 수 있어요. 그래서 작은 차이는 고치지 않아요 — 2026-11-13 확인)
@@ -233,6 +270,9 @@ def run(closes, raw, mkt_of, names=None, state_path=None):
             json.dump({"rot": rot + ROTATE}, open(state_path, "w"))
         except Exception:
             pass
+    if REPORT.get("vn_naver"):
+        print(f"베트남 최근 {VN_DAYS}일을 네이버(거래소 공식 종가) 값으로 맞춘 곳 {len(REPORT['vn_naver'])}:",
+              ", ".join(REPORT["vn_naver"][:15]))
     if REPORT.get("split_skip"):
         print("액면분할 차이로 이번엔 비교하지 않은 곳:", ", ".join(REPORT["split_skip"][:15]))
     print(f"다른 사이트와 비교: {REPORT['source_ok']}곳 비교 · 마지막 가격 고침 {len(REPORT['fixed_last'])}곳 · "
