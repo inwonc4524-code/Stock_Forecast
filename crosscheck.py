@@ -114,6 +114,28 @@ def _ret(s, end, days):
 PERIODS = [("1d", "1d", 0.05), ("1w", 7, 0.08), ("1m", 28, 0.12), (1, 365, 0.25)]   # (기간, 날짜, 허용 차이)
 
 
+
+def align_split(src, y):
+    """네이버(비교용) 가격 중 야후와 분할 비율(2·4·5·8·10배 …)만큼 차이 나는 날은 야후 기준으로 나눠 맞춰요.
+    2026-11-21 점검: 샌디스크는 11/20 에 1→8 분할하면서 하루 −16% 떨어져서, 네이버 쪽 하루 튐이 10.5배로 보여
+    fix_jumps 가 8배가 아니라 10배로 잘못 맞췄어요. 같은 날 야후 값과 하루하루 비교하면 8배를 바로 찾을 수 있어요."""
+    try:
+        both = src.index.intersection(y.index)
+        if not len(both):
+            return src
+        r = src.loc[both] / y.loc[both]
+        src = src.copy()
+        n = 0
+        for d, v in r.items():
+            if pd.notna(v) and v > 0 and abs(v - 1) > 0.3:
+                f = pricecache._nice(float(v))
+                if f not in (None, 1):
+                    src.loc[d] = src.loc[d] / f
+                    n += 1
+        return src
+    except Exception:
+        return src
+
 def run(closes, raw, mkt_of, names=None, state_path=None):
     """closes: 수익률용(배당 포함) / raw: 실제 가격. 틀린 마지막 가격은 고치고, 수익률이 크게 다른 기간은 BAD에 기록."""
     names = names or {}
@@ -162,6 +184,8 @@ def run(closes, raw, mkt_of, names=None, state_path=None):
         REPORT["source_ok"] += 1
         # 네이버 해외 가격은 분할 전 옛날 가격을 그대로 둘 때가 있어서, 비교 전에 야후 쪽과 같은 방법으로 분할 튐을 맞춰요
         # (ETF 봇 2026-11-14 와 같은 방법, 개별종목 봇은 2026-11-21 점검 때 추가)
+        if mkt_of.get(t) != "KR":   # 한국은 네이버가 기준이라 그대로(망가진 야후 가격을 찾는 데 써요)
+            src = align_split(src, raw[t])   # 먼저 같은 날 야후와 분할 비율 맞추기 (2026-11-21)
         try:
             src = pricecache.fix_jumps(src, 3.0, f"(비교용 네이버) {t}")
         except Exception:
