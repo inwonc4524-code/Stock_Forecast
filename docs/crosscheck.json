@@ -1,7 +1,23 @@
 {
- "source_ok": 51,
+ "source_ok": 386,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [],
- "no_source_markets": []
+ "excluded": [
+  "JYP Ent. (1달)",
+  "베트남산업은행 (1년)",
+  "베트남테콤은행 (1달,1년)",
+  "호치민개발은행 (1년)",
+  "게마뎁트 그룹 (1년)",
+  "PV시추 (1년)"
+ ],
+ "no_source_markets": [
+  "CA",
+  "DE",
+  "ID",
+  "SG",
+  "UK"
+ ],
+ "vn_naver": [
+  "베트남테콤은행"
+ ]
 }
