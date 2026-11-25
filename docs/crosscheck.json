@@ -1,25 +1,7 @@
 {
- "source_ok": 452,
+ "source_ok": 51,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [
-  "하이브 (1주)",
-  "에스엠 (1주)",
-  "JYP Ent. (1주)",
-  "베트남산업은행 (1년)",
-  "베트남테콤은행 (1년)",
-  "호치민개발은행 (1년)",
-  "게마뎁트 그룹 (1년)",
-  "PV시추 (1년)"
- ],
- "no_source_markets": [
-  "CA",
-  "DE",
-  "ID",
-  "SG",
-  "UK"
- ],
- "vn_naver": [
-  "베트남테콤은행"
- ]
+ "excluded": [],
+ "no_source_markets": []
 }
