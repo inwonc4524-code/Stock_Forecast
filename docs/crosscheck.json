@@ -1,13 +1,7 @@
 {
- "source_ok": 193,
+ "source_ok": 54,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [
-  "SK아이이테크놀로지 (1일)",
-  "유진로봇 (1일)",
-  "하이브 (1주)",
-  "에스엠 (1주)",
-  "JYP Ent. (1주)"
- ],
+ "excluded": [],
  "no_source_markets": []
 }
