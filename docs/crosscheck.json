@@ -1,10 +1,7 @@
 {
- "source_ok": 193,
+ "source_ok": 54,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [
-  "유진로봇 (1일)",
-  "에이피알 (1일,1주)"
- ],
+ "excluded": [],
  "no_source_markets": []
 }
