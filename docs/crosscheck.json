@@ -1,7 +1,9 @@
 {
- "source_ok": 51,
+ "source_ok": 143,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [],
+ "excluded": [
+  "에이피알 (1일)"
+ ],
  "no_source_markets": []
 }
