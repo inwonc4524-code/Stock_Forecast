@@ -1,7 +1,20 @@
 {
- "source_ok": 51,
+ "source_ok": 419,
  "source_none": 0,
  "fixed_last": [],
- "excluded": [],
- "no_source_markets": []
+ "excluded": [
+  "에이피알 (1일)",
+  "베트남산업은행 (1년)",
+  "베트남테콤은행 (1년)",
+  "호치민개발은행 (1년)",
+  "게마뎁트 그룹 (1년)",
+  "PV시추 (1년)"
+ ],
+ "no_source_markets": [
+  "CA",
+  "DE",
+  "ID",
+  "SG",
+  "UK"
+ ]
 }
